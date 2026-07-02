@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { gate } from "../src/gate/gate.js";
-import { createManifest } from "../src/manifest/manifest.js";
+import { gate } from "../src/core/gate/gate.js";
+import { createManifest } from "../src/operations/manifest/manifest.js";
 
 describe("custom policy rules", () => {
   it("runs sync and async rules in order before the handler", async () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { gate } from "../src/gate/gate.js";
+import { gate } from "../src/core/gate/gate.js";
 
 describe("timeout", () => {
   it("returns a structured timeout error", async () => {

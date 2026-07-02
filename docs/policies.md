@@ -70,6 +70,10 @@ gate(
 
 Use `extractPaths` for custom input shapes.
 
+Use `strictPathPolicy(policy)` in code paths where any path allowlist or denylist must include a
+`pathRoot`. This helper fails fast during registration-time setup and is useful for project-level
+filesystem presets.
+
 Policy denials are machine-readable through `error.code` and a generic `reasonCode`. They do not
 echo requested paths, URLs, commands, denylist entries, or allowlist misses by default. Set
 `exposePolicyDenialDetails: true` only for trusted callers that are allowed to see the denied
@@ -185,3 +189,18 @@ exception message, or custom detail payload in the tool-visible error. Set
 `exposeRuleDenialDetails: true` only when the caller is allowed to learn which rule fired.
 Exceptions fail closed as `POLICY_RULE_ERROR`; they never allow the handler to run. Manifests
 include custom rule names but not executable rule code.
+
+## Security Advisories
+
+Schema validation only checks whether a policy is well formed. Security linting reports
+risky-but-valid choices:
+
+```ts
+import { validatePolicySecurity } from "toolgate-mcp";
+
+const findings = validatePolicySecurity(policy, { strictPathMode: true });
+```
+
+Advisories include destructive tools without approval, filesystem rules without `pathRoot`, broad
+command or domain allowlists, disabled redaction on data tools, unkeyed rate limits, and denial
+detail exposure. Findings are machine-readable and avoid echoing secret policy values.

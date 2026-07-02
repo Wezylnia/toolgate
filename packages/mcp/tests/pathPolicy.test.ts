@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { gate } from "../src/gate/gate.js";
+import { gate } from "../src/core/gate/gate.js";
 
 describe("path policy", () => {
   it("lets denylist win over allowlist", async () => {

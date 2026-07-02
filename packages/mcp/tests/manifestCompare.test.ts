@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { compareManifests } from "../src/manifest/compare.js";
-import type { PolicyManifest } from "../src/manifest/manifest.js";
+import { compareManifests } from "../src/operations/manifest/compare.js";
+import type { PolicyManifest } from "../src/operations/manifest/manifest.js";
 
 describe("manifest comparison", () => {
   it("detects protection removal and policy expansion as danger", () => {

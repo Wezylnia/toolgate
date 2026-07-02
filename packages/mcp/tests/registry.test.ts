@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createToolGate, DuplicateToolPolicyError } from "../src/registry/toolGate.js";
+import { createToolGate, DuplicateToolPolicyError } from "../src/core/registry/toolGate.js";
 
 describe("ToolGate registry", () => {
   it("applies defaults and conservatively merges deny lists, rules, and metadata", async () => {

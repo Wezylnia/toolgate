@@ -6,10 +6,13 @@ describe("GitHub policy check action", () => {
     const action = await readFile("../../action.yml", "utf8");
 
     expect(action).toContain("using: composite");
-    expect(action).toContain("default: 1.0.3");
+    expect(action).toContain("default: 1.1.1");
     expect(action).toContain("toolgate-mcp@${TOOLGATE_VERSION}");
     expect(action).toContain('--base "${TOOLGATE_BASE}"');
     expect(action).toContain('--head "${TOOLGATE_HEAD}"');
     expect(action).toContain('--fail-on "${TOOLGATE_FAIL_ON}"');
+    expect(action).toContain("TOOLGATE_LINT");
+    expect(action).toContain("--fail-on-advisory");
+    expect(action).toContain("--strict-path-mode");
   });
 });

@@ -3,7 +3,7 @@ import {
   destructiveFilesystemPolicy,
   externalApiPolicy,
   readOnlyFilesystemPolicy
-} from "../src/presets/presets.js";
+} from "../src/policies/presets/presets.js";
 
 describe("policy presets", () => {
   it("creates a read-only filesystem policy", () => {

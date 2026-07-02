@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { runCli } from "../src/cli/cli.js";
+import { runCli } from "../src/operations/cli/cli.js";
 
 let tempDir: string;
 
@@ -93,6 +93,21 @@ describe("cli", () => {
     expect(io.stderrText()).toContain("$.tools[0].rateLimit.max");
   });
 
+  it("reads UTF-8 BOM JSON files", async () => {
+    const configPath = path.join(tempDir, "toolgate.config.json");
+    await writeFile(
+      configPath,
+      `\uFEFF${JSON.stringify({ schemaVersion: "1.0", tools: [{ name: "read_file" }] })}`,
+      "utf8"
+    );
+    const io = createIo();
+
+    const exitCode = await runCli(["validate-config", "--file", configPath], io);
+
+    expect(exitCode).toBe(0);
+    expect(io.stdoutText()).toContain("Policy config is valid.");
+  });
+
   it("returns errors for invalid manifests", async () => {
     const manifestPath = path.join(tempDir, "bad-manifest.json");
     await writeFile(manifestPath, JSON.stringify({ schemaVersion: "1.0", tools: [{ name: "" }] }), "utf8");
@@ -145,6 +160,99 @@ describe("cli", () => {
     expect(output.changes).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: "APPROVAL_DISABLED", severity: "danger" })
     ]));
+  });
+
+  it("lints policy configs with machine-readable advisories", async () => {
+    const configPath = path.join(tempDir, "toolgate.config.json");
+    await writeFile(
+      configPath,
+      JSON.stringify({
+        schemaVersion: "1.0",
+        tools: [
+          {
+            name: "delete_file",
+            risk: "destructive",
+            allowedPaths: ["src/**"],
+            allowedCommands: ["npm *"]
+          }
+        ]
+      }),
+      "utf8"
+    );
+    const io = createIo();
+
+    const exitCode = await runCli(["lint-policy", "--config", configPath, "--json"], io);
+
+    expect(exitCode).toBe(1);
+    const output = JSON.parse(io.stdoutText());
+    expect(output.passed).toBe(false);
+    expect(output.findings).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "DESTRUCTIVE_WITHOUT_APPROVAL", severity: "danger" }),
+      expect.objectContaining({ code: "BROAD_COMMAND_ALLOWLIST", severity: "danger" })
+    ]));
+    expect(io.stdoutText()).not.toContain("npm *");
+  });
+
+  it("lints manifests with strict path mode", async () => {
+    const manifestPath = path.join(tempDir, "policy-manifest.json");
+    await writeFile(
+      manifestPath,
+      JSON.stringify({
+        schemaVersion: "1.0",
+        tools: [
+          {
+            name: "read_file",
+            risk: "read",
+            requiresApproval: false,
+            allowedPaths: ["src/**"],
+            audit: true,
+            redact: true
+          }
+        ]
+      }),
+      "utf8"
+    );
+    const io = createIo();
+
+    const exitCode = await runCli(["lint-manifest", "--file", manifestPath, "--strict-path-mode", "--json"], io);
+
+    expect(exitCode).toBe(1);
+    const output = JSON.parse(io.stdoutText());
+    expect(output.findings).toContainEqual(expect.objectContaining({
+      code: "PATH_POLICY_WITHOUT_ROOT",
+      severity: "danger"
+    }));
+  });
+
+  it("can fail manifest checks on head manifest lint findings", async () => {
+    const basePath = path.join(tempDir, "base.json");
+    const headPath = path.join(tempDir, "head.json");
+    const manifest = {
+      schemaVersion: "1.0",
+      tools: [
+        {
+          name: "read_file",
+          risk: "read",
+          requiresApproval: false,
+          allowedPaths: ["src/**"],
+          audit: true,
+          redact: true
+        }
+      ]
+    };
+    await writeFile(basePath, JSON.stringify(manifest), "utf8");
+    await writeFile(headPath, JSON.stringify(manifest), "utf8");
+    const io = createIo();
+
+    const exitCode = await runCli(
+      ["check-manifest", "--base", basePath, "--head", headPath, "--lint", "--strict-path-mode", "--json"],
+      io
+    );
+
+    expect(exitCode).toBe(1);
+    const output = JSON.parse(io.stdoutText());
+    expect(output.changes).toEqual([]);
+    expect(output.lint.passed).toBe(false);
   });
 
   it("migrates legacy config and manifest files", async () => {

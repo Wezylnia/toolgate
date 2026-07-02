@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { migrateManifest } from "../src/manifest/migrate.js";
+import { migrateManifest } from "../src/operations/manifest/migrate.js";
 import {
   createManifestFromConfig,
   policyConfigSchema,
   validatePolicyConfig
-} from "../src/policy/configSchema.js";
-import { migratePolicyConfig } from "../src/policy/migrateConfig.js";
+} from "../src/policies/config/configSchema.js";
+import { migratePolicyConfig } from "../src/policies/config/migrateConfig.js";
 
 describe("v1 schemas", () => {
   it("validates and converts a stable policy config", () => {
@@ -49,7 +49,7 @@ describe("v1 schemas", () => {
   });
 
   it("keeps the manual manifest validator strict with the JSON Schema", async () => {
-    const { validateManifest } = await import("../src/manifest/schema.js");
+    const { validateManifest } = await import("../src/operations/manifest/schema.js");
     const result = validateManifest({
       schemaVersion: "1.0",
       unexpected: true,

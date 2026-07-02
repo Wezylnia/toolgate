@@ -1,7 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { gate } from "../src/gate/gate.js";
+import { gate } from "../src/core/gate/gate.js";
 
 let tempDir: string;
 

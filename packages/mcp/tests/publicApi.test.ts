@@ -13,6 +13,8 @@ describe("v1 public API", () => {
       "createMemoryRateLimitStore", "createRateLimiter", "createRateLimitKey",
       "approve", "denyApproval", "createApprovalBinding", "createMemoryApprovalNonceStore",
       "validateApprovalDecision",
+      "validatePolicySecurity", "validatePolicyConfigSecurity", "validateManifestSecurity",
+      "summarizePolicySecurity", "strictPathPolicy",
       "createOpenTelemetryObserver", "redact", "evaluatePolicy", "evaluateCustomRules"
     ];
 

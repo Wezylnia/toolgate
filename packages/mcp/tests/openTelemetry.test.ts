@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { gate } from "../src/gate/gate.js";
-import { createOpenTelemetryObserver } from "../src/observability/openTelemetry.js";
+import { gate } from "../src/core/gate/gate.js";
+import { createOpenTelemetryObserver } from "../src/integrations/observability/openTelemetry.js";
 
 describe("OpenTelemetry observer", () => {
   it("creates and completes a span without exposing input or output", async () => {

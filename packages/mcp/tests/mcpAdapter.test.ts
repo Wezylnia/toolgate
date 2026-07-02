@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { gateMcp, gateMcpHandler, isMcpToolResult, toMcpToolResult } from "../src/mcp/adapter.js";
+import { gateMcp, gateMcpHandler, isMcpToolResult, toMcpToolResult } from "../src/integrations/mcp/adapter.js";
 
 describe("MCP adapter", () => {
   it("preserves an existing MCP result from an allowed handler", async () => {

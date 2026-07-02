@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { gate } from "../src/gate/gate.js";
-import { evaluatePolicy } from "../src/policy/evaluatePolicy.js";
+import { gate } from "../src/core/gate/gate.js";
+import { evaluatePolicy } from "../src/policies/enforcement/evaluatePolicy.js";
 
 describe("network policy", () => {
   it("allows configured domains", async () => {

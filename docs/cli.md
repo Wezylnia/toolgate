@@ -79,3 +79,24 @@ toolgate check-manifest --base policy-main.json --head policy-pr.json
 The default `danger` threshold returns exit code `1` for security-reducing changes. Use
 `--fail-on warning` to also require review for newly added tools, or `--fail-on info` for any
 manifest change. Add `--json` for CI reports.
+
+Add `--lint` to also run security advisories against the head manifest:
+
+```bash
+toolgate check-manifest --base policy-main.json --head policy-pr.json --lint --fail-on-advisory warning
+```
+
+Use `--strict-path-mode` when filesystem path policies without `pathRoot` should fail as danger.
+
+## Lint Policies
+
+```bash
+toolgate lint-policy --config toolgate.config.json --json
+toolgate lint-manifest --file policy-manifest.json --fail-on warning
+```
+
+Linting is advisory and separate from schema validation. It reports risky-but-valid policy choices
+such as destructive tools without approval, filesystem path rules without `pathRoot`, disabled
+redaction on data tools, broad command or domain allowlists, and exposed denial details. Findings
+use stable machine-readable `code`, `severity`, `tool`, and `path` fields and avoid echoing secret
+policy values.

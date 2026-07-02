@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { gate } from "../src/gate/gate.js";
-import { redact } from "../src/redaction/redact.js";
+import { gate } from "../src/core/gate/gate.js";
+import { redact } from "../src/core/redaction/redact.js";
 
 describe("redaction", () => {
   it("redacts sensitive keys recursively", () => {

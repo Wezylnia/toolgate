@@ -2,8 +2,8 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createAuditLogger } from "../src/audit/jsonlAuditLogger.js";
-import { gate } from "../src/gate/gate.js";
+import { createAuditLogger } from "../src/operations/audit/jsonlAuditLogger.js";
+import { gate } from "../src/core/gate/gate.js";
 
 let tempDir: string;
 

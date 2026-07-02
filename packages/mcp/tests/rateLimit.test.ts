@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { gate } from "../src/gate/gate.js";
-import { createMemoryRateLimitStore } from "../src/rateLimit/rateLimiter.js";
+import { gate } from "../src/core/gate/gate.js";
+import { createMemoryRateLimitStore } from "../src/core/rateLimit/rateLimiter.js";
 
 describe("rate limiting", () => {
   it("blocks calls after max calls in a window", async () => {

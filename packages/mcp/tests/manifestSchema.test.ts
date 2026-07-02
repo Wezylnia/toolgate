@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createManifest } from "../src/manifest/manifest.js";
-import { policyManifestSchema, validateManifest } from "../src/manifest/schema.js";
+import { createManifest } from "../src/operations/manifest/manifest.js";
+import { policyManifestSchema, validateManifest } from "../src/operations/manifest/schema.js";
 
 describe("manifest schema", () => {
   it("validates manifests created by createManifest", () => {

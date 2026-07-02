@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1.1 - 2026-07-02
+
+### Added
+
+- Security advisory linting for static policy configs, manifests, and runtime policies.
+- `toolgate lint-policy` and `toolgate lint-manifest` CLI commands with JSON output.
+- `check-manifest --lint`, `--fail-on-advisory`, and `--strict-path-mode` support.
+- GitHub Action lint inputs for advisory checks in CI.
+- `strictPathPolicy()` helper for enforcing `pathRoot` on runtime path policies.
+
+### Changed
+
+- Reorganized `src/policy` into config, enforcement, and validation submodules.
+- CLI JSON reading now tolerates UTF-8 BOM-prefixed files.
+- GitHub Action default `toolgate-mcp` CLI version is now `1.1.1`.
+
 ## 1.0.3 - 2026-07-02
 
 ### Added

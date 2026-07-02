@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AuditEntry } from "../src/audit/auditLogger.js";
-import { gate } from "../src/gate/gate.js";
+import type { AuditEntry } from "../src/operations/audit/auditLogger.js";
+import { gate } from "../src/core/gate/gate.js";
 import { approve, createMemoryApprovalNonceStore, validateApprovalDecision } from "../src/index.js";
 
 describe("approval providers", () => {

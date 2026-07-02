@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { gate } from "../src/gate/gate.js";
+import { gate } from "../src/core/gate/gate.js";
 import {
   InvalidToolPolicyError,
   validatePolicies,
   validatePolicy
-} from "../src/policy/validatePolicy.js";
+} from "../src/policies/validation/validatePolicy.js";
 
 describe("policy validation", () => {
   it("accepts a complete policy", () => {

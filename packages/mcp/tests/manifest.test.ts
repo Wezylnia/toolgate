@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createManifest } from "../src/manifest/manifest.js";
+import { createManifest } from "../src/operations/manifest/manifest.js";
 
 describe("manifest", () => {
   it("exports public policy visibility", () => {

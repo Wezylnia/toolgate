@@ -17,10 +17,22 @@ inputs:
     description: Minimum change severity that fails the check (info, warning, or danger).
     required: false
     default: danger
+  lint:
+    description: Also run security advisory linting against the head manifest.
+    required: false
+    default: "false"
+  fail-on-advisory:
+    description: Minimum security advisory severity that fails linting (info, warning, or danger).
+    required: false
+    default: danger
+  strict-path-mode:
+    description: Treat path policies without pathRoot as danger instead of warning.
+    required: false
+    default: "false"
   toolgate-version:
     description: toolgate-mcp package version used by the action.
     required: false
-    default: 1.0.3
+    default: 1.1.1
 
 runs:
   using: composite
@@ -36,9 +48,22 @@ runs:
         TOOLGATE_BASE: ${{ inputs.base }}
         TOOLGATE_HEAD: ${{ inputs.head }}
         TOOLGATE_FAIL_ON: ${{ inputs['fail-on'] }}
+        TOOLGATE_LINT: ${{ inputs.lint }}
+        TOOLGATE_FAIL_ON_ADVISORY: ${{ inputs['fail-on-advisory'] }}
+        TOOLGATE_STRICT_PATH_MODE: ${{ inputs['strict-path-mode'] }}
         TOOLGATE_VERSION: ${{ inputs['toolgate-version'] }}
-      run: >-
-        npx --yes "toolgate-mcp@${TOOLGATE_VERSION}" check-manifest
-        --base "${TOOLGATE_BASE}"
-        --head "${TOOLGATE_HEAD}"
-        --fail-on "${TOOLGATE_FAIL_ON}"
+      run: |
+        args=(
+          check-manifest
+          --base "${TOOLGATE_BASE}"
+          --head "${TOOLGATE_HEAD}"
+          --fail-on "${TOOLGATE_FAIL_ON}"
+          --fail-on-advisory "${TOOLGATE_FAIL_ON_ADVISORY}"
+        )
+        if [ "${TOOLGATE_LINT}" = "true" ]; then
+          args+=(--lint)
+        fi
+        if [ "${TOOLGATE_STRICT_PATH_MODE}" = "true" ]; then
+          args+=(--strict-path-mode)
+        fi
+        npx --yes "toolgate-mcp@${TOOLGATE_VERSION}" "${args[@]}"

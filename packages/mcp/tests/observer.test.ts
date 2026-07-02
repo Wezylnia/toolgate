@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ToolGateEvent } from "../src/gate/types.js";
-import { gate } from "../src/gate/gate.js";
+import type { ToolGateEvent } from "../src/core/gate/types.js";
+import { gate } from "../src/core/gate/gate.js";
 import { approve } from "../src/index.js";
 
 describe("lifecycle observer", () => {

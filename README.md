@@ -105,6 +105,7 @@ If the agent asks for `.env`, the handler is not executed:
 - dependency-free OpenTelemetry span bridge
 - policy manifest export for visibility
 - versioned v1 policy-config and manifest JSON Schemas with migration commands
+- advisory policy linting for risky-but-valid security configurations
 - fail-fast runtime policy validation and duplicate-name config checks
 - manifest JSON schema and validation helpers
 - security-aware manifest comparison for policy regression checks

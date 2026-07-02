@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: Wezylnia/toolgate@v1.0.3
+      - uses: Wezylnia/toolgate@v1.1.1
         with:
           base: policy-manifest.main.json
           head: policy-manifest.pr.json
@@ -33,5 +33,9 @@ Thresholds:
 - `warning` also fails when tools are added or timeouts increase.
 - `info` fails for any declared policy change.
 
-The action runs the pinned `toolgate-mcp@1.0.3` CLI on Node.js 24. Override
+Set `lint: "true"` to run advisory linting against the head manifest after schema validation.
+`fail-on-advisory` accepts `danger`, `warning`, or `info`. `strict-path-mode: "true"` treats
+path policies without `pathRoot` as danger instead of warning.
+
+The action runs the pinned `toolgate-mcp@1.1.1` CLI on Node.js 24. Override
 `toolgate-version` only when testing a newer compatible package release.
