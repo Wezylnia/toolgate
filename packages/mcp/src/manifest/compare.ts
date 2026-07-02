@@ -74,6 +74,9 @@ function compareTool(
   compareBooleanProtection(base, head, "redact", "REDACTION", changes);
   compareTimeout(base, head, changes);
   compareRateLimit(base, head, changes);
+  compareStringField(base, head, "pathRoot", "PATH_ROOT", true, changes);
+  compareStringField(base, head, "policyVersion", "POLICY_VERSION", false, changes);
+  compareStringField(base, head, "toolVersion", "TOOL_VERSION", false, changes);
   compareLists(base, head, "allowedPaths", "ALLOW_PATHS", true, changes);
   compareLists(base, head, "allowedDomains", "ALLOW_DOMAINS", true, changes);
   compareLists(base, head, "allowedCommands", "ALLOW_COMMANDS", true, changes);
@@ -81,6 +84,33 @@ function compareTool(
   compareLists(base, head, "deniedDomains", "DENY_DOMAINS", false, changes);
   compareLists(base, head, "deniedCommands", "DENY_COMMANDS", false, changes);
   compareLists(base, head, "customRules", "CUSTOM_RULES", false, changes);
+}
+
+function compareStringField(
+  base: PolicyManifestTool,
+  head: PolicyManifestTool,
+  field: "pathRoot" | "policyVersion" | "toolVersion",
+  code: string,
+  protective: boolean,
+  changes: ManifestChange[]
+): void {
+  if (base[field] === head[field]) return;
+  if (base[field] !== undefined && head[field] === undefined) {
+    changes.push(fieldChange(
+      protective ? "danger" : "warning",
+      `${code}_REMOVED`,
+      head.name,
+      field,
+      `Tool '${head.name}' ${field} was removed.`,
+      base[field]
+    ));
+    return;
+  }
+  if (base[field] === undefined && head[field] !== undefined) {
+    changes.push(fieldChange("info", `${code}_ADDED`, head.name, field, `Tool '${head.name}' ${field} was added.`, undefined, head[field]));
+    return;
+  }
+  changes.push(fieldChange("warning", `${code}_CHANGED`, head.name, field, `Tool '${head.name}' ${field} changed.`, base[field], head[field]));
 }
 
 function compareBooleanProtection(

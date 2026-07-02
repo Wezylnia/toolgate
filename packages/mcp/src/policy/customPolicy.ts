@@ -44,8 +44,10 @@ export async function evaluateCustomRules(
       return {
         allowed: false,
         code: decision.code ?? "CUSTOM_RULE_DENIED",
-        message: decision.message ?? `Tool '${context.toolName}' was denied by policy rule '${rule.name}'.`,
-        details: { ...decision.details, rule: rule.name }
+        message: decision.message ?? `Tool '${context.toolName}' was denied by policy.`,
+        details: context.policy.exposeRuleDenialDetails
+          ? { ...decision.details, rule: rule.name }
+          : undefined
       };
     }
   }

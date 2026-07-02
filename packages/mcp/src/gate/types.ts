@@ -14,23 +14,43 @@ export interface RateLimitOptions {
   store?: RateLimitStore;
 }
 
+export interface ApprovalBinding {
+  subject: string;
+  toolName: string;
+  inputHash: string;
+  policyVersion: string;
+  toolVersion: string;
+  expiresAt: string;
+  nonce: string;
+}
+
+export type ApprovalSubjectResolver<TInput = unknown> =
+  | string
+  | ((input: TInput, context: ToolGateContext) => string | Promise<string>);
+
+export interface ApprovalNonceStore {
+  consume(nonce: string, expiresAt: Date): boolean | Promise<boolean>;
+}
+
 export interface ApprovalRequest<TInput = unknown> {
   input: TInput;
   requestId: string;
   toolName: string;
   risk: ToolRisk;
   policy: ToolPolicy;
+  binding: ApprovalBinding;
 }
 
 export interface ApprovalDecision {
   approved: boolean;
+  binding?: ApprovalBinding;
   reason?: string;
   metadata?: Record<string, unknown>;
 }
 
 export type ApprovalProvider = (
   request: ApprovalRequest
-) => boolean | ApprovalDecision | Promise<boolean | ApprovalDecision>;
+) => ApprovalDecision | Promise<ApprovalDecision>;
 
 export interface PolicyRuleDecision {
   allowed: boolean;
@@ -68,12 +88,19 @@ export interface ToolPolicy {
   name: string;
   description?: string;
   risk?: ToolRisk;
+  policyVersion?: string;
+  toolVersion?: string;
   requireApproval?: boolean;
   approval?: ApprovalProvider;
+  approvalSubject?: ApprovalSubjectResolver;
+  approvalExpiresInMs?: number;
+  approvalNonceStore?: ApprovalNonceStore;
   rules?: ToolPolicyRule[];
+  exposeRuleDenialDetails?: boolean;
   observe?: ToolGateObserver;
   allowedPaths?: string[];
   deniedPaths?: string[];
+  pathRoot?: string;
   extractPaths?: ToolInputExtractor;
   allowedDomains?: string[];
   deniedDomains?: string[];

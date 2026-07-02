@@ -10,9 +10,12 @@ export interface PolicyManifestTool {
   name: string;
   description?: string;
   risk: string;
+  policyVersion?: string;
+  toolVersion?: string;
   requiresApproval: boolean;
   allowedPaths?: string[];
   deniedPaths?: string[];
+  pathRoot?: string;
   allowedDomains?: string[];
   deniedDomains?: string[];
   allowedCommands?: string[];
@@ -41,9 +44,12 @@ export function createManifest(
       name: policy.name,
       description: policy.description,
       risk: policy.risk ?? "read",
+      policyVersion: policy.policyVersion,
+      toolVersion: policy.toolVersion,
       requiresApproval: policy.requireApproval ?? false,
       allowedPaths: policy.allowedPaths,
       deniedPaths: policy.deniedPaths,
+      pathRoot: policy.pathRoot,
       allowedDomains: policy.allowedDomains,
       deniedDomains: policy.deniedDomains,
       allowedCommands: policy.allowedCommands,

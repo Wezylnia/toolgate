@@ -46,6 +46,7 @@ const deleteFileTool = gate(
     name: "delete_file",
     risk: "destructive",
     requireApproval: true,
+    pathRoot: process.cwd(),
     allowedPaths: ["src/**", "docs/**"],
     deniedPaths: [".env", "secrets/**", "node_modules/**"],
     timeoutMs: 10_000,
@@ -95,7 +96,10 @@ Rules:
 
 - deny rules win over allow rules
 - paths are normalized before matching
-- traversal and absolute paths are blocked
+- when `pathRoot` is set, paths and glob patterns are canonicalized before matching so symlink
+  escapes are denied
+- without `pathRoot`, traversal and absolute paths are blocked
+- with `pathRoot`, the canonical target must remain inside the root
 - if `allowedPaths` is set, paths outside it are denied
 
 ## Network Policy

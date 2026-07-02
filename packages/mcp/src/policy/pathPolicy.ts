@@ -1,6 +1,13 @@
 import type { ToolPolicy } from "../gate/types.js";
 import { globMatch } from "../utils/globMatch.js";
-import { isTraversalPath, normalizePathForPolicy } from "../utils/normalizePath.js";
+import {
+  canonicalPathForPolicy,
+  canonicalPatternForPolicy,
+  canonicalRootForPolicy,
+  isCanonicalPathInsideRoot,
+  isTraversalPath,
+  normalizePathForPolicy
+} from "../utils/normalizePath.js";
 
 const pathKeys = ["path", "filePath", "filepath", "targetPath"];
 
@@ -35,18 +42,32 @@ export function evaluatePathPolicy(policy: ToolPolicy, input: unknown): PathPoli
     return { allowed: true };
   }
 
-  for (const rawPath of paths) {
-    const normalizedPath = normalizePathForPolicy(rawPath);
+  const canonicalRoot = policy.pathRoot ? canonicalRootForPolicy(policy.pathRoot) : undefined;
+  const deniedPaths = canonicalRoot
+    ? policy.deniedPaths?.map((pattern) => canonicalPatternForPolicy(pattern, canonicalRoot))
+    : policy.deniedPaths;
+  const allowedPaths = canonicalRoot
+    ? policy.allowedPaths?.map((pattern) => canonicalPatternForPolicy(pattern, canonicalRoot))
+    : policy.allowedPaths;
 
-    if (isTraversalPath(rawPath)) {
+  for (const rawPath of paths) {
+    const normalizedPath = canonicalRoot
+      ? canonicalPathForPolicy(rawPath, canonicalRoot)
+      : normalizePathForPolicy(rawPath);
+
+    if (!canonicalRoot && isTraversalPath(rawPath)) {
       return denied(policy, normalizedPath, "Path traversal or absolute paths are not allowed.");
     }
 
-    if (policy.deniedPaths?.length && globMatch(normalizedPath, policy.deniedPaths)) {
+    if (canonicalRoot && !isCanonicalPathInsideRoot(normalizedPath, canonicalRoot)) {
+      return denied(policy, normalizedPath, "Path resolves outside pathRoot.");
+    }
+
+    if (deniedPaths?.length && globMatch(normalizedPath, deniedPaths)) {
       return denied(policy, normalizedPath);
     }
 
-    if (policy.allowedPaths?.length && !globMatch(normalizedPath, policy.allowedPaths)) {
+    if (allowedPaths?.length && !globMatch(normalizedPath, allowedPaths)) {
       return denied(policy, normalizedPath);
     }
   }

@@ -11,10 +11,13 @@ export interface PolicyConfig {
 export interface PolicyConfigTool {
   name: string;
   description?: string;
+  policyVersion?: string;
+  toolVersion?: string;
   risk?: ToolRisk;
   requireApproval?: boolean;
   allowedPaths?: string[];
   deniedPaths?: string[];
+  pathRoot?: string;
   allowedDomains?: string[];
   deniedDomains?: string[];
   allowedCommands?: string[];
@@ -48,10 +51,13 @@ export const policyConfigSchema = {
         properties: {
           name: { type: "string", minLength: 1 },
           description: { type: "string" },
+          policyVersion: { type: "string", minLength: 1 },
+          toolVersion: { type: "string", minLength: 1 },
           risk: { enum: ["read", "write", "external", "destructive"] },
           requireApproval: { type: "boolean" },
           allowedPaths: stringArray,
           deniedPaths: stringArray,
+          pathRoot: { type: "string", minLength: 1 },
           allowedDomains: stringArray,
           deniedDomains: stringArray,
           allowedCommands: stringArray,
@@ -79,7 +85,7 @@ export const policyConfigSchema = {
 } as const;
 
 const toolKeys = new Set([
-  "name", "description", "risk", "requireApproval", "allowedPaths", "deniedPaths",
+  "name", "description", "policyVersion", "toolVersion", "risk", "requireApproval", "allowedPaths", "deniedPaths", "pathRoot",
   "allowedDomains", "deniedDomains", "allowedCommands", "deniedCommands", "customRules",
   "rateLimit", "timeoutMs", "redact", "audit", "metadata"
 ]);
@@ -119,10 +125,13 @@ export function createManifestFromConfig(config: PolicyConfig): PolicyManifest {
     tools: config.tools.map((tool): PolicyManifestTool => ({
       name: tool.name,
       description: tool.description,
+      policyVersion: tool.policyVersion,
+      toolVersion: tool.toolVersion,
       risk: tool.risk ?? "read",
       requiresApproval: tool.requireApproval ?? false,
       allowedPaths: tool.allowedPaths,
       deniedPaths: tool.deniedPaths,
+      pathRoot: tool.pathRoot,
       allowedDomains: tool.allowedDomains,
       deniedDomains: tool.deniedDomains,
       allowedCommands: tool.allowedCommands,
@@ -160,6 +169,11 @@ function validateConfigTool(
   }
   if (value.risk !== undefined && !["read", "write", "external", "destructive"].includes(String(value.risk))) {
     issues.push({ path: `${path}.risk`, message: "Risk is invalid." });
+  }
+  for (const key of ["policyVersion", "toolVersion", "pathRoot"] as const) {
+    if (value[key] !== undefined && (typeof value[key] !== "string" || value[key].length === 0)) {
+      issues.push({ path: `${path}.${key}`, message: `${key} must be a non-empty string.` });
+    }
   }
   for (const key of listKeys) validateStringList(value, key, path, issues);
   for (const key of ["requireApproval", "redact", "audit"] as const) {

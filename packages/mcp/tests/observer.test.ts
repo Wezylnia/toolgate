@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ToolGateEvent } from "../src/gate/types.js";
 import { gate } from "../src/gate/gate.js";
+import { approve } from "../src/index.js";
 
 describe("lifecycle observer", () => {
   it("emits started, approved, and completed events", async () => {
@@ -10,7 +11,8 @@ describe("lifecycle observer", () => {
         name: "delete_file",
         risk: "destructive",
         requireApproval: true,
-        approval: () => true,
+        approvalSubject: "user:1",
+        approval: (request) => approve(request),
         observe: (event) => { events.push(event); }
       },
       async () => ({ deleted: true })

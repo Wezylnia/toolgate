@@ -49,6 +49,40 @@ export function validatePolicy(policy: unknown, path = "$"): PolicyValidationRes
   if (policy.approval !== undefined && typeof policy.approval !== "function") {
     issues.push({ path: `${path}.approval`, message: "Approval must be a function." });
   }
+  if (policy.approval !== undefined && policy.requireApproval === true && policy.approvalSubject === undefined) {
+    issues.push({ path: `${path}.approvalSubject`, message: "approvalSubject is required when approval is configured for an approval-required tool." });
+  }
+  if (
+    policy.approvalSubject !== undefined &&
+    typeof policy.approvalSubject !== "string" &&
+    typeof policy.approvalSubject !== "function"
+  ) {
+    issues.push({ path: `${path}.approvalSubject`, message: "approvalSubject must be a non-empty string or function." });
+  }
+  if (typeof policy.approvalSubject === "string" && policy.approvalSubject.trim().length === 0) {
+    issues.push({ path: `${path}.approvalSubject`, message: "approvalSubject must be a non-empty string or function." });
+  }
+  if (policy.approvalExpiresInMs !== undefined && !isPositiveNumber(policy.approvalExpiresInMs)) {
+    issues.push({ path: `${path}.approvalExpiresInMs`, message: "approvalExpiresInMs must be a positive number." });
+  }
+  if (
+    policy.approvalNonceStore !== undefined &&
+    (!isRecord(policy.approvalNonceStore) || typeof policy.approvalNonceStore.consume !== "function")
+  ) {
+    issues.push({ path: `${path}.approvalNonceStore`, message: "approvalNonceStore must provide a consume function." });
+  }
+  if (policy.policyVersion !== undefined && (typeof policy.policyVersion !== "string" || policy.policyVersion.length === 0)) {
+    issues.push({ path: `${path}.policyVersion`, message: "policyVersion must be a non-empty string." });
+  }
+  if (policy.toolVersion !== undefined && (typeof policy.toolVersion !== "string" || policy.toolVersion.length === 0)) {
+    issues.push({ path: `${path}.toolVersion`, message: "toolVersion must be a non-empty string." });
+  }
+  if (policy.pathRoot !== undefined && (typeof policy.pathRoot !== "string" || policy.pathRoot.length === 0)) {
+    issues.push({ path: `${path}.pathRoot`, message: "pathRoot must be a non-empty string." });
+  }
+  if (policy.exposeRuleDenialDetails !== undefined && typeof policy.exposeRuleDenialDetails !== "boolean") {
+    issues.push({ path: `${path}.exposeRuleDenialDetails`, message: "exposeRuleDenialDetails must be a boolean." });
+  }
   if (policy.observe !== undefined && typeof policy.observe !== "function") {
     issues.push({ path: `${path}.observe`, message: "Observe must be a function." });
   }

@@ -29,6 +29,13 @@ export {
   createRateLimitKey
 } from "./rateLimit/rateLimiter.js";
 export {
+  approve,
+  createApprovalBinding,
+  createMemoryApprovalNonceStore,
+  denyApproval,
+  validateApprovalDecision
+} from "./approval/approvalBinding.js";
+export {
   assertPolicy,
   InvalidToolPolicyError,
   validatePolicies,
@@ -37,8 +44,11 @@ export {
 
 export type {
   ApprovalDecision,
+  ApprovalBinding,
+  ApprovalNonceStore,
   ApprovalProvider,
   ApprovalRequest,
+  ApprovalSubjectResolver,
   PolicyRuleDecision,
   ToolGateContext,
   ToolGateEvent,

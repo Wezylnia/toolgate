@@ -41,6 +41,15 @@ export function approvalError(policy: ToolPolicy, error: unknown): ToolGateError
   };
 }
 
+export function invalidApprovalError(policy: ToolPolicy, code: string, message: string): ToolGateError {
+  return {
+    type: "approval_error",
+    code,
+    message: `Tool '${policy.name}' approval decision is invalid.`,
+    details: { message }
+  };
+}
+
 export function policyViolationError(policy: ToolPolicy, decision: PolicyDecision): ToolGateError {
   return {
     type: "policy_violation",

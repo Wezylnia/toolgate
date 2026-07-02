@@ -51,6 +51,7 @@ const readFileTool = gate(
   {
     name: "read_file",
     risk: "read",
+    pathRoot: process.cwd(),
     allowedPaths: ["src/**", "docs/**"],
     deniedPaths: [".env", "secrets/**"],
     timeoutMs: 5000,
@@ -84,8 +85,8 @@ If the agent asks for `.env`, the handler is not executed:
 - `gateMcpHandler()` integration preserving MCP SDK request context
 - risk levels: `read`, `write`, `external`, `destructive`
 - approval-required blocking for dangerous tools
-- host-driven async approval providers with structured denial and failure results
-- path allowlists and denylists with deny-first behavior
+- host-driven async approval providers bound to subject, input hash, versions, expiry, and nonce
+- canonical path allowlists and denylists with deny-first behavior when `pathRoot` is set
 - network domain allowlists and denylists
 - command allowlists and denylists
 - keyed rate limiting with in-memory or custom shared stores

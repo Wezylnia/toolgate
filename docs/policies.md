@@ -47,8 +47,26 @@ Rules:
 
 - denied paths win over allowed paths
 - paths are normalized before matching
-- traversal attempts and absolute paths are blocked
+- without `pathRoot`, traversal attempts and absolute paths are blocked
+- with `pathRoot`, the canonical target must remain inside the root
 - if `allowedPaths` is present, paths outside it are denied
+
+For filesystem tools, set `pathRoot` to the authenticated workspace or project root. With
+`pathRoot`, ToolGateKit resolves the requested path and glob patterns to canonical filesystem paths
+before matching. Symlinks or junctions that resolve outside `pathRoot` are denied before glob
+checks run.
+
+```ts
+gate(
+  {
+    name: "read_file",
+    pathRoot: workspaceRoot,
+    allowedPaths: ["src/**", "docs/**"],
+    deniedPaths: [".env", "secrets/**"]
+  },
+  handler
+);
+```
 
 Use `extractPaths` for custom input shapes.
 
@@ -156,6 +174,8 @@ gate(
 );
 ```
 
-Rules may return a boolean or a decision object. Evaluation stops at the first denial. Exceptions
-fail closed as `POLICY_RULE_ERROR`; they never allow the handler to run. Manifests include custom
-rule names but not executable rule code.
+Rules may return a boolean or a decision object. Evaluation stops at the first denial. Denials are
+machine-readable through `error.code`; by default ToolGateKit does not include the rule name or
+custom detail payload in the tool-visible error. Set `exposeRuleDenialDetails: true` only when the
+caller is allowed to learn which rule fired. Exceptions fail closed as `POLICY_RULE_ERROR`; they
+never allow the handler to run. Manifests include custom rule names but not executable rule code.

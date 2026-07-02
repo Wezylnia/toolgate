@@ -11,6 +11,8 @@ describe("v1 public API", () => {
       "policyConfigSchema", "validatePolicyConfig", "migratePolicyConfig",
       "validatePolicy", "validatePolicies", "assertPolicy",
       "createMemoryRateLimitStore", "createRateLimiter", "createRateLimitKey",
+      "approve", "denyApproval", "createApprovalBinding", "createMemoryApprovalNonceStore",
+      "validateApprovalDecision",
       "createOpenTelemetryObserver", "redact", "evaluatePolicy", "evaluateCustomRules"
     ];
 

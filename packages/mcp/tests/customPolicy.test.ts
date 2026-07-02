@@ -22,7 +22,7 @@ describe("custom policy rules", () => {
     expect(calls).toEqual(["tenant", "quota", "handler"]);
   });
 
-  it("blocks on the first denied rule with rule details", async () => {
+  it("blocks on the first denied rule without revealing rule details by default", async () => {
     const handler = vi.fn();
     const laterRule = vi.fn(() => true);
     const protectedHandler = gate(
@@ -48,10 +48,37 @@ describe("custom policy rules", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.code).toBe("AMOUNT_LIMIT");
-      expect(result.error.details).toEqual({ rule: "amount_limit", maximum: 100 });
+      expect(result.error.details).toBeUndefined();
     }
     expect(laterRule).not.toHaveBeenCalled();
     expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("can expose custom rule denial details when explicitly configured", async () => {
+    const protectedHandler = gate(
+      {
+        name: "transfer",
+        exposeRuleDenialDetails: true,
+        rules: [
+          {
+            name: "amount_limit",
+            evaluate: () => ({
+              allowed: false,
+              code: "AMOUNT_LIMIT",
+              details: { maximum: 100 }
+            })
+          }
+        ]
+      },
+      async () => "never"
+    );
+
+    const result = await protectedHandler({ amount: 500 });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.details).toEqual({ rule: "amount_limit", maximum: 100 });
+    }
   });
 
   it("fails closed when a rule throws", async () => {

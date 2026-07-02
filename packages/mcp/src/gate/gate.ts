@@ -1,4 +1,9 @@
 import type { AuditLogger } from "../audit/auditLogger.js";
+import {
+  createApprovalBinding,
+  createMemoryApprovalNonceStore,
+  validateApprovalDecision
+} from "../approval/approvalBinding.js";
 import { createAuditLogger } from "../audit/jsonlAuditLogger.js";
 import { noopAuditLogger } from "../audit/noopAuditLogger.js";
 import { evaluatePolicy } from "../policy/evaluatePolicy.js";
@@ -16,6 +21,7 @@ import {
   approvalRequiredError,
   createMeta,
   handlerError,
+  invalidApprovalError,
   policyViolationError,
   policyRuleError,
   rateLimitedError,
@@ -44,6 +50,7 @@ export function createGateExecutor<TInput, TOutput, TArgs extends unknown[] = []
 ): (input: TInput, ...args: TArgs) => Promise<ToolGateResult<TOutput>> {
   assertPolicy(policy);
   const rateLimiter = createRateLimiter(policy.rateLimit);
+  const approvalNonceStore = policy.approvalNonceStore ?? createMemoryApprovalNonceStore();
 
   return async (input: TInput, ...args: TArgs) => {
     const controller = new AbortController();
@@ -104,15 +111,31 @@ export function createGateExecutor<TInput, TOutput, TArgs extends unknown[] = []
       }
 
       try {
+        const binding = await createApprovalBinding(policy, input, ctx);
         const rawDecision = await policy.approval({
           input,
           requestId: ctx.requestId,
           toolName: ctx.toolName,
           risk: ctx.risk,
-          policy
+          policy,
+          binding
         });
-        const decision =
-          typeof rawDecision === "boolean" ? { approved: rawDecision } : rawDecision;
+        const decision = rawDecision;
+        const validation = await validateApprovalDecision(
+          decision,
+          binding,
+          approvalNonceStore
+        );
+        if (!validation.valid) {
+          const error = invalidApprovalError(
+            policy,
+            validation.code ?? "APPROVAL_DECISION_INVALID",
+            validation.message ?? "Approval decision was invalid."
+          );
+          await auditFailure(audit, policy, ctx, auditInput, error);
+          await emitToolGateEvent(policy, ctx, { type: "failed", code: error.code });
+          return { ok: false, error, meta: createMeta(ctx) };
+        }
 
         if (!decision.approved) {
           const error = approvalDeniedError(policy, decision.reason);

@@ -28,6 +28,8 @@ export const policyManifestSchema = {
         properties: {
           name: { type: "string", minLength: 1 },
           description: { type: "string" },
+          policyVersion: { type: "string", minLength: 1 },
+          toolVersion: { type: "string", minLength: 1 },
           risk: {
             type: "string",
             enum: ["read", "write", "external", "destructive"]
@@ -35,6 +37,7 @@ export const policyManifestSchema = {
           requiresApproval: { type: "boolean" },
           allowedPaths: stringArraySchema(),
           deniedPaths: stringArraySchema(),
+          pathRoot: { type: "string", minLength: 1 },
           allowedDomains: stringArraySchema(),
           deniedDomains: stringArraySchema(),
           allowedCommands: stringArraySchema(),
@@ -118,7 +121,7 @@ function validateManifestTool(
   }
 
   const knownKeys = new Set([
-    "name", "description", "risk", "requiresApproval", "allowedPaths", "deniedPaths",
+    "name", "description", "policyVersion", "toolVersion", "risk", "requiresApproval", "allowedPaths", "deniedPaths", "pathRoot",
     "allowedDomains", "deniedDomains", "allowedCommands", "deniedCommands", "customRules",
     "rateLimit", "audit", "redact", "timeoutMs", "metadata"
   ]);
@@ -132,6 +135,9 @@ function validateManifestTool(
   if (tool.description !== undefined && typeof tool.description !== "string") {
     issues.push({ path: `${path}.description`, message: "Description must be a string." });
   }
+  validateOptionalString(tool, "policyVersion", path, issues);
+  validateOptionalString(tool, "toolVersion", path, issues);
+  validateOptionalString(tool, "pathRoot", path, issues);
 
   if (!["read", "write", "external", "destructive"].includes(String(tool.risk))) {
     issues.push({ path: `${path}.risk`, message: "Tool risk is invalid." });
@@ -165,6 +171,17 @@ function validateManifestTool(
   }
   if (tool.metadata !== undefined && !isRecord(tool.metadata)) {
     issues.push({ path: `${path}.metadata`, message: "metadata must be an object." });
+  }
+}
+
+function validateOptionalString(
+  object: Record<string, unknown>,
+  key: string,
+  path: string,
+  issues: ManifestValidationIssue[]
+): void {
+  if (object[key] !== undefined && (typeof object[key] !== "string" || object[key].length === 0)) {
+    issues.push({ path: `${path}.${key}`, message: `${key} must be a non-empty string.` });
   }
 }
 
