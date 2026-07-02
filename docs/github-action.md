@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: Wezylnia/toolgate@v1.0.0
+      - uses: Wezylnia/toolgate@v1.0.3
         with:
           base: policy-manifest.main.json
           head: policy-manifest.pr.json
@@ -33,5 +33,5 @@ Thresholds:
 - `warning` also fails when tools are added or timeouts increase.
 - `info` fails for any declared policy change.
 
-The action runs the pinned `toolgate-mcp@1.0.0` CLI on Node.js 24. Override
+The action runs the pinned `toolgate-mcp@1.0.3` CLI on Node.js 24. Override
 `toolgate-version` only when testing a newer compatible package release.

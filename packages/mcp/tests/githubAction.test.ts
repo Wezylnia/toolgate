@@ -6,7 +6,7 @@ describe("GitHub policy check action", () => {
     const action = await readFile("../../action.yml", "utf8");
 
     expect(action).toContain("using: composite");
-    expect(action).toContain("default: 1.0.0");
+    expect(action).toContain("default: 1.0.3");
     expect(action).toContain("toolgate-mcp@${TOOLGATE_VERSION}");
     expect(action).toContain('--base "${TOOLGATE_BASE}"');
     expect(action).toContain('--head "${TOOLGATE_HEAD}"');

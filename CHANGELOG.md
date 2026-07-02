@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.3 - 2026-07-02
+
+### Added
+
+- Bound approval decisions to authenticated subject, exact tool name, stable input hash, policy/tool version, expiry, and one-time nonce.
+- `approve()`, `denyApproval()`, `createMemoryApprovalNonceStore()`, and approval validation helpers.
+- `pathRoot` canonical filesystem enforcement for path policies, including symlink/junction escape protection.
+- Opt-in `exposePolicyDenialDetails` and `exposeRuleDenialDetails` controls.
+
+### Changed
+
+- Approval providers must return a bound `ApprovalDecision`; boolean approval and unbound approvals now fail closed.
+- Built-in path, URL, command, and rule denials no longer echo denied values or secret rule details by default.
+- Manifest/config schemas and manifest comparison expose and flag denial-detail exposure changes.
+- GitHub Action default `toolgate-mcp` CLI version is now `1.0.3`.
+
 ## 1.0.0 - 2026-06-30
 
 ### Added

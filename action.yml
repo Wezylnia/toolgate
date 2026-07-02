@@ -20,7 +20,7 @@ inputs:
   toolgate-version:
     description: toolgate-mcp package version used by the action.
     required: false
-    default: 1.0.0
+    default: 1.0.3
 
 runs:
   using: composite
