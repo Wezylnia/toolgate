@@ -69,7 +69,28 @@ describe("command policy", () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.details?.command).toBe("pnpm deploy");
+      expect(result.error.details).toEqual({ reasonCode: "COMMAND_ALLOWLIST_MISS" });
+    }
+  });
+
+  it("can expose denied commands when explicitly configured", async () => {
+    const protectedHandler = gate(
+      {
+        name: "run_command",
+        allowedCommands: ["pnpm test"],
+        exposePolicyDenialDetails: true
+      },
+      async () => ({ ok: true })
+    );
+
+    const result = await protectedHandler({ command: "pnpm deploy" });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.details).toEqual({
+        command: "pnpm deploy",
+        reasonCode: "COMMAND_ALLOWLIST_MISS"
+      });
     }
   });
 });

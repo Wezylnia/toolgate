@@ -65,11 +65,13 @@ export function policyRuleError(policy: ToolPolicy, rule: string, error: unknown
   return {
     type: "policy_error",
     code: "POLICY_RULE_ERROR",
-    message: `Tool '${policy.name}' policy rule '${rule}' failed.`,
-    details: {
-      rule,
-      message: error instanceof Error ? error.message : String(error)
-    }
+    message: `Tool '${policy.name}' policy rule evaluation failed.`,
+    details: policy.exposeRuleDenialDetails
+      ? {
+          rule,
+          message: error instanceof Error ? error.message : String(error)
+        }
+      : undefined
   };
 }
 

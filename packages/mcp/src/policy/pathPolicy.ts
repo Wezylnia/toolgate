@@ -56,19 +56,19 @@ export function evaluatePathPolicy(policy: ToolPolicy, input: unknown): PathPoli
       : normalizePathForPolicy(rawPath);
 
     if (!canonicalRoot && isTraversalPath(rawPath)) {
-      return denied(policy, normalizedPath, "Path traversal or absolute paths are not allowed.");
+      return denied(policy, normalizedPath, "PATH_TRAVERSAL");
     }
 
     if (canonicalRoot && !isCanonicalPathInsideRoot(normalizedPath, canonicalRoot)) {
-      return denied(policy, normalizedPath, "Path resolves outside pathRoot.");
+      return denied(policy, normalizedPath, "PATH_OUTSIDE_ROOT");
     }
 
     if (deniedPaths?.length && globMatch(normalizedPath, deniedPaths)) {
-      return denied(policy, normalizedPath);
+      return denied(policy, normalizedPath, "PATH_DENYLIST_MATCH");
     }
 
     if (allowedPaths?.length && !globMatch(normalizedPath, allowedPaths)) {
-      return denied(policy, normalizedPath);
+      return denied(policy, normalizedPath, "PATH_ALLOWLIST_MISS");
     }
   }
 
@@ -83,14 +83,13 @@ function normalizeExtractorResult(value: string | string[] | undefined): string[
   return value ?? [];
 }
 
-function denied(policy: ToolPolicy, path: string, reason?: string): PathPolicyResult {
+function denied(policy: ToolPolicy, path: string, reasonCode: string): PathPolicyResult {
   return {
     allowed: false,
     code: "PATH_DENIED",
-    message: `Tool '${policy.name}' is not allowed to access '${path}'.`,
-    details: {
-      path,
-      reason
-    }
+    message: `Tool '${policy.name}' is not allowed to access the requested path.`,
+    details: policy.exposePolicyDenialDetails
+      ? { path, reasonCode }
+      : { reasonCode }
   };
 }

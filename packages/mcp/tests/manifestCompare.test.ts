@@ -23,7 +23,9 @@ describe("manifest comparison", () => {
       audit: false,
       redact: false,
       allowedPaths: ["tmp/**", "src/**"],
-      deniedPaths: [".env"]
+      deniedPaths: [".env"],
+      exposesPolicyDenialDetails: true,
+      exposesRuleDenialDetails: true
     });
 
     const result = compareManifests(base, head);
@@ -41,7 +43,9 @@ describe("manifest comparison", () => {
       "RATE_LIMIT_REMOVED",
       "ALLOW_PATHS_ENTRIES_ADDED",
       "DENY_PATHS_ENTRIES_REMOVED",
-      "CUSTOM_RULES_REMOVED"
+      "CUSTOM_RULES_REMOVED",
+      "POLICY_DENIAL_DETAILS_EXPOSED",
+      "RULE_DENIAL_DETAILS_EXPOSED"
     ]));
   });
 

@@ -72,6 +72,8 @@ function compareTool(
   compareBooleanProtection(base, head, "requiresApproval", "APPROVAL", changes);
   compareBooleanProtection(base, head, "audit", "AUDIT", changes);
   compareBooleanProtection(base, head, "redact", "REDACTION", changes);
+  compareBooleanExposure(base, head, "exposesPolicyDenialDetails", "POLICY_DENIAL_DETAILS", changes);
+  compareBooleanExposure(base, head, "exposesRuleDenialDetails", "RULE_DENIAL_DETAILS", changes);
   compareTimeout(base, head, changes);
   compareRateLimit(base, head, changes);
   compareStringField(base, head, "pathRoot", "PATH_ROOT", true, changes);
@@ -84,6 +86,26 @@ function compareTool(
   compareLists(base, head, "deniedDomains", "DENY_DOMAINS", false, changes);
   compareLists(base, head, "deniedCommands", "DENY_COMMANDS", false, changes);
   compareLists(base, head, "customRules", "CUSTOM_RULES", false, changes);
+}
+
+function compareBooleanExposure(
+  base: PolicyManifestTool,
+  head: PolicyManifestTool,
+  field: "exposesPolicyDenialDetails" | "exposesRuleDenialDetails",
+  code: string,
+  changes: ManifestChange[]
+): void {
+  if (Boolean(base[field]) === Boolean(head[field])) return;
+  const exposed = Boolean(head[field]);
+  changes.push(fieldChange(
+    exposed ? "danger" : "info",
+    `${code}_${exposed ? "EXPOSED" : "HIDDEN"}`,
+    head.name,
+    field,
+    `Tool '${head.name}' ${field} was ${exposed ? "enabled" : "disabled"}.`,
+    base[field],
+    head[field]
+  ));
 }
 
 function compareStringField(

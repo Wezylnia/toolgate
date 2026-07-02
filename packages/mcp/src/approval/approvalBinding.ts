@@ -57,33 +57,38 @@ export function denyApproval(reason?: string, metadata?: Record<string, unknown>
 }
 
 export async function validateApprovalDecision(
-  decision: ApprovalDecision,
+  decision: unknown,
   expected: ApprovalBinding,
   nonceStore: ApprovalNonceStore,
   now = Date.now()
 ): Promise<ApprovalValidationResult> {
-  if (!decision || typeof decision !== "object" || typeof decision.approved !== "boolean") {
+  if (!decision || typeof decision !== "object") {
     return { valid: false, code: "APPROVAL_DECISION_INVALID", message: "Approval provider returned an invalid decision." };
   }
 
-  if (!decision.approved) return { valid: true };
+  const approvalDecision = decision as Partial<ApprovalDecision>;
+  if (typeof approvalDecision.approved !== "boolean") {
+    return { valid: false, code: "APPROVAL_DECISION_INVALID", message: "Approval provider returned an invalid decision." };
+  }
 
-  if (!decision.binding) {
+  if (!approvalDecision.approved) return { valid: true };
+
+  if (!approvalDecision.binding) {
     return { valid: false, code: "APPROVAL_BINDING_MISSING", message: "Approved decisions must include the request binding." };
   }
 
   for (const key of ["subject", "toolName", "inputHash", "policyVersion", "toolVersion", "expiresAt", "nonce"] as const) {
-    if (decision.binding[key] !== expected[key]) {
+    if (approvalDecision.binding[key] !== expected[key]) {
       return { valid: false, code: "APPROVAL_BINDING_MISMATCH", message: "Approval binding did not match the protected call." };
     }
   }
 
-  const expiresAt = new Date(decision.binding.expiresAt);
+  const expiresAt = new Date(approvalDecision.binding.expiresAt);
   if (!Number.isFinite(expiresAt.getTime()) || expiresAt.getTime() <= now) {
     return { valid: false, code: "APPROVAL_EXPIRED", message: "Approval binding has expired." };
   }
 
-  const consumed = await nonceStore.consume(decision.binding.nonce, expiresAt);
+  const consumed = await nonceStore.consume(approvalDecision.binding.nonce, expiresAt);
   if (!consumed) {
     return { valid: false, code: "APPROVAL_NONCE_REPLAYED", message: "Approval nonce has already been used." };
   }
@@ -130,10 +135,10 @@ function hashPolicy(policy: ToolPolicy): string {
 }
 
 function hashStable(value: unknown): string {
-  return createHash("sha256").update(stableStringify(value)).digest("hex");
+  return createHash("sha256").update(stableStringify(value, new WeakSet<object>())).digest("hex");
 }
 
-function stableStringify(value: unknown): string {
+function stableStringify(value: unknown, seen: WeakSet<object>): string {
   if (value === null || typeof value !== "object") {
     if (typeof value === "bigint") return JSON.stringify(value.toString());
     if (typeof value === "function") return JSON.stringify("[Function]");
@@ -141,14 +146,17 @@ function stableStringify(value: unknown): string {
     return JSON.stringify(value);
   }
 
+  if (seen.has(value)) return JSON.stringify("[Circular]");
+  seen.add(value);
+
   if (Array.isArray(value)) {
-    return `[${value.map(stableStringify).join(",")}]`;
+    return `[${value.map((item) => stableStringify(item, seen)).join(",")}]`;
   }
 
   const record = value as Record<string, unknown>;
   return `{${Object.keys(record)
     .filter((key) => record[key] !== undefined)
     .sort()
-    .map((key) => `${JSON.stringify(key)}:${stableStringify(record[key])}`)
+    .map((key) => `${JSON.stringify(key)}:${stableStringify(record[key], seen)}`)
     .join(",")}}`;
 }

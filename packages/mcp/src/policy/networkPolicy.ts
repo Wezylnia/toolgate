@@ -37,18 +37,18 @@ export function evaluateNetworkPolicy(policy: ToolPolicy, input: unknown): Netwo
   for (const rawUrl of urls) {
     const hostname = getHostname(rawUrl);
     if (!hostname) {
-      return denied(policy, rawUrl, "INVALID_URL", "URL is not valid.");
+      return denied(policy, rawUrl, "INVALID_URL", "URL_INVALID");
     }
 
     if (policy.deniedDomains?.some((domain) => domainMatches(hostname, domain))) {
-      return denied(policy, rawUrl, "DOMAIN_DENIED");
+      return denied(policy, rawUrl, "DOMAIN_DENIED", "DOMAIN_DENYLIST_MATCH");
     }
 
     if (
       policy.allowedDomains?.length &&
       !policy.allowedDomains.some((domain) => domainMatches(hostname, domain))
     ) {
-      return denied(policy, rawUrl, "DOMAIN_DENIED");
+      return denied(policy, rawUrl, "DOMAIN_DENIED", "DOMAIN_ALLOWLIST_MISS");
     }
   }
 
@@ -85,15 +85,14 @@ function denied(
   policy: ToolPolicy,
   url: string,
   code: string,
-  reason?: string
+  reasonCode: string
 ): NetworkPolicyResult {
   return {
     allowed: false,
     code,
-    message: `Tool '${policy.name}' is not allowed to access URL '${url}'.`,
-    details: {
-      url,
-      reason
-    }
+    message: `Tool '${policy.name}' is not allowed to access the requested URL.`,
+    details: policy.exposePolicyDenialDetails
+      ? { url, reasonCode }
+      : { reasonCode }
   };
 }

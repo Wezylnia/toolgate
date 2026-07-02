@@ -80,6 +80,9 @@ export function validatePolicy(policy: unknown, path = "$"): PolicyValidationRes
   if (policy.pathRoot !== undefined && (typeof policy.pathRoot !== "string" || policy.pathRoot.length === 0)) {
     issues.push({ path: `${path}.pathRoot`, message: "pathRoot must be a non-empty string." });
   }
+  if (policy.exposePolicyDenialDetails !== undefined && typeof policy.exposePolicyDenialDetails !== "boolean") {
+    issues.push({ path: `${path}.exposePolicyDenialDetails`, message: "exposePolicyDenialDetails must be a boolean." });
+  }
   if (policy.exposeRuleDenialDetails !== undefined && typeof policy.exposeRuleDenialDetails !== "boolean") {
     issues.push({ path: `${path}.exposeRuleDenialDetails`, message: "exposeRuleDenialDetails must be a boolean." });
   }

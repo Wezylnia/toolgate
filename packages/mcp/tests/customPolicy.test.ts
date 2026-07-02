@@ -97,9 +97,27 @@ describe("custom policy rules", () => {
     if (!result.ok) {
       expect(result.error.type).toBe("policy_error");
       expect(result.error.code).toBe("POLICY_RULE_ERROR");
-      expect(result.error.details).toMatchObject({ rule: "entitlement", message: "offline" });
+      expect(result.error.details).toBeUndefined();
     }
     expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("can expose rule execution failure details when explicitly configured", async () => {
+    const protectedHandler = gate(
+      {
+        name: "transfer",
+        exposeRuleDenialDetails: true,
+        rules: [{ name: "entitlement", evaluate: async () => { throw new Error("offline"); } }]
+      },
+      async () => "never"
+    );
+
+    const result = await protectedHandler({});
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.details).toMatchObject({ rule: "entitlement", message: "offline" });
+    }
   });
 
   it("fails closed on malformed JavaScript rule decisions", async () => {
@@ -116,7 +134,7 @@ describe("custom policy rules", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.code).toBe("POLICY_RULE_ERROR");
-      expect(result.error.details?.rule).toBe("malformed");
+      expect(result.error.details).toBeUndefined();
     }
   });
 

@@ -70,6 +70,11 @@ gate(
 
 Use `extractPaths` for custom input shapes.
 
+Policy denials are machine-readable through `error.code` and a generic `reasonCode`. They do not
+echo requested paths, URLs, commands, denylist entries, or allowlist misses by default. Set
+`exposePolicyDenialDetails: true` only for trusted callers that are allowed to see the denied
+input value.
+
 ## Network Policy
 
 Network policy is evaluated from common input fields: `url`, `uri`, `href`, `endpoint`, and `targetUrl`.
@@ -175,7 +180,8 @@ gate(
 ```
 
 Rules may return a boolean or a decision object. Evaluation stops at the first denial. Denials are
-machine-readable through `error.code`; by default ToolGateKit does not include the rule name or
-custom detail payload in the tool-visible error. Set `exposeRuleDenialDetails: true` only when the
-caller is allowed to learn which rule fired. Exceptions fail closed as `POLICY_RULE_ERROR`; they
-never allow the handler to run. Manifests include custom rule names but not executable rule code.
+machine-readable through `error.code`; by default ToolGateKit does not include the rule name,
+exception message, or custom detail payload in the tool-visible error. Set
+`exposeRuleDenialDetails: true` only when the caller is allowed to learn which rule fired.
+Exceptions fail closed as `POLICY_RULE_ERROR`; they never allow the handler to run. Manifests
+include custom rule names but not executable rule code.

@@ -66,8 +66,9 @@ toolgate validate-manifest --file policy-manifest.json
 ## Compare Security Posture
 
 `compareManifests(base, head)` classifies policy changes as `info`, `warning`, or `danger`.
-Dangerous changes include increasing risk, disabling approval, audit, or redaction, removing
-timeout or rate limits, adding allowlist entries, and removing denylist entries or custom rules.
+Dangerous changes include increasing risk, disabling approval, audit, or redaction, exposing
+policy/rule denial details, removing timeout or rate limits, adding allowlist entries, and removing
+denylist entries or custom rules.
 
 The comparison is intentionally conservative. It compares declared patterns as sets and does not
 attempt to prove whether two glob patterns are semantically equivalent.

@@ -56,6 +56,8 @@ export const policyManifestSchema = {
           },
           audit: { type: "boolean" },
           redact: { type: "boolean" },
+          exposesPolicyDenialDetails: { type: "boolean" },
+          exposesRuleDenialDetails: { type: "boolean" },
           timeoutMs: { type: "number", minimum: 1 },
           metadata: { type: "object" }
         }
@@ -123,7 +125,7 @@ function validateManifestTool(
   const knownKeys = new Set([
     "name", "description", "policyVersion", "toolVersion", "risk", "requiresApproval", "allowedPaths", "deniedPaths", "pathRoot",
     "allowedDomains", "deniedDomains", "allowedCommands", "deniedCommands", "customRules",
-    "rateLimit", "audit", "redact", "timeoutMs", "metadata"
+    "rateLimit", "audit", "redact", "exposesPolicyDenialDetails", "exposesRuleDenialDetails", "timeoutMs", "metadata"
   ]);
   for (const key of Object.keys(tool)) {
     if (!knownKeys.has(key)) issues.push({ path: `${path}.${key}`, message: "Unknown manifest tool field." });
@@ -153,6 +155,8 @@ function validateManifestTool(
   if (typeof tool.redact !== "boolean") {
     issues.push({ path: `${path}.redact`, message: "redact must be a boolean." });
   }
+  validateOptionalBoolean(tool, "exposesPolicyDenialDetails", path, issues);
+  validateOptionalBoolean(tool, "exposesRuleDenialDetails", path, issues);
 
   validateOptionalStringArray(tool, "allowedPaths", path, issues);
   validateOptionalStringArray(tool, "deniedPaths", path, issues);
@@ -171,6 +175,17 @@ function validateManifestTool(
   }
   if (tool.metadata !== undefined && !isRecord(tool.metadata)) {
     issues.push({ path: `${path}.metadata`, message: "metadata must be an object." });
+  }
+}
+
+function validateOptionalBoolean(
+  object: Record<string, unknown>,
+  key: string,
+  path: string,
+  issues: ManifestValidationIssue[]
+): void {
+  if (object[key] !== undefined && typeof object[key] !== "boolean") {
+    issues.push({ path: `${path}.${key}`, message: `${key} must be a boolean.` });
   }
 }
 

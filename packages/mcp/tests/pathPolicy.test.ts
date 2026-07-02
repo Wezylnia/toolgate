@@ -97,7 +97,7 @@ describe("path policy", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.code).toBe("PATH_DENIED");
-      expect(result.error.details?.reason).toBe("Path resolves outside pathRoot.");
+      expect(result.error.details).toEqual({ reasonCode: "PATH_OUTSIDE_ROOT" });
     }
   });
 });

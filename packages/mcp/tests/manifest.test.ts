@@ -55,6 +55,8 @@ describe("manifest", () => {
           },
           audit: true,
           redact: false,
+          exposesPolicyDenialDetails: undefined,
+          exposesRuleDenialDetails: undefined,
           timeoutMs: 5000,
           metadata: undefined
         },
@@ -73,6 +75,8 @@ describe("manifest", () => {
           rateLimit: undefined,
           audit: false,
           redact: false,
+          exposesPolicyDenialDetails: undefined,
+          exposesRuleDenialDetails: undefined,
           timeoutMs: undefined,
           metadata: undefined
         }

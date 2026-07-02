@@ -27,6 +27,8 @@ export interface PolicyConfigTool {
   timeoutMs?: number;
   redact?: boolean;
   audit?: boolean;
+  exposePolicyDenialDetails?: boolean;
+  exposeRuleDenialDetails?: boolean;
   metadata?: Record<string, unknown>;
 }
 
@@ -77,6 +79,8 @@ export const policyConfigSchema = {
           timeoutMs: { type: "number", exclusiveMinimum: 0 },
           redact: { type: "boolean" },
           audit: { type: "boolean" },
+          exposePolicyDenialDetails: { type: "boolean" },
+          exposeRuleDenialDetails: { type: "boolean" },
           metadata: { type: "object" }
         }
       }
@@ -87,7 +91,7 @@ export const policyConfigSchema = {
 const toolKeys = new Set([
   "name", "description", "policyVersion", "toolVersion", "risk", "requireApproval", "allowedPaths", "deniedPaths", "pathRoot",
   "allowedDomains", "deniedDomains", "allowedCommands", "deniedCommands", "customRules",
-  "rateLimit", "timeoutMs", "redact", "audit", "metadata"
+  "rateLimit", "timeoutMs", "redact", "audit", "exposePolicyDenialDetails", "exposeRuleDenialDetails", "metadata"
 ]);
 const listKeys = [
   "allowedPaths", "deniedPaths", "allowedDomains", "deniedDomains",
@@ -140,6 +144,8 @@ export function createManifestFromConfig(config: PolicyConfig): PolicyManifest {
       rateLimit: tool.rateLimit,
       audit: tool.audit ?? false,
       redact: tool.redact ?? false,
+      exposesPolicyDenialDetails: tool.exposePolicyDenialDetails,
+      exposesRuleDenialDetails: tool.exposeRuleDenialDetails,
       timeoutMs: tool.timeoutMs,
       metadata: tool.metadata
     }))
@@ -176,7 +182,7 @@ function validateConfigTool(
     }
   }
   for (const key of listKeys) validateStringList(value, key, path, issues);
-  for (const key of ["requireApproval", "redact", "audit"] as const) {
+  for (const key of ["requireApproval", "redact", "audit", "exposePolicyDenialDetails", "exposeRuleDenialDetails"] as const) {
     if (value[key] !== undefined && typeof value[key] !== "boolean") {
       issues.push({ path: `${path}.${key}`, message: `${key} must be a boolean.` });
     }

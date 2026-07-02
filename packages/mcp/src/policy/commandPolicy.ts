@@ -37,11 +37,11 @@ export function evaluateCommandPolicy(policy: ToolPolicy, input: unknown): Comma
 
   for (const command of commands) {
     if (policy.deniedCommands?.length && globMatch(command, policy.deniedCommands)) {
-      return denied(policy, command);
+      return denied(policy, command, "COMMAND_DENYLIST_MATCH");
     }
 
     if (policy.allowedCommands?.length && !globMatch(command, policy.allowedCommands)) {
-      return denied(policy, command);
+      return denied(policy, command, "COMMAND_ALLOWLIST_MISS");
     }
   }
 
@@ -56,13 +56,13 @@ function normalizeExtractorResult(value: string | string[] | undefined): string[
   return value ?? [];
 }
 
-function denied(policy: ToolPolicy, command: string): CommandPolicyResult {
+function denied(policy: ToolPolicy, command: string, reasonCode: string): CommandPolicyResult {
   return {
     allowed: false,
     code: "COMMAND_DENIED",
-    message: `Tool '${policy.name}' is not allowed to run command '${command}'.`,
-    details: {
-      command
-    }
+    message: `Tool '${policy.name}' is not allowed to run the requested command.`,
+    details: policy.exposePolicyDenialDetails
+      ? { command, reasonCode }
+      : { reasonCode }
   };
 }

@@ -96,6 +96,7 @@ export interface ToolPolicy {
   approvalExpiresInMs?: number;
   approvalNonceStore?: ApprovalNonceStore;
   rules?: ToolPolicyRule[];
+  exposePolicyDenialDetails?: boolean;
   exposeRuleDenialDetails?: boolean;
   observe?: ToolGateObserver;
   allowedPaths?: string[];

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { AuditEntry } from "../src/audit/auditLogger.js";
 import { gate } from "../src/gate/gate.js";
-import { approve, createMemoryApprovalNonceStore } from "../src/index.js";
+import { approve, createMemoryApprovalNonceStore, validateApprovalDecision } from "../src/index.js";
 
 describe("approval providers", () => {
   it("executes a handler after explicit approval", async () => {
@@ -95,7 +95,7 @@ describe("approval providers", () => {
     }
   });
 
-  it("rejects replayed approval nonces", async () => {
+  it("rejects approval reuse across calls", async () => {
     const store = createMemoryApprovalNonceStore();
     let firstBinding: Parameters<typeof approve>[0] | undefined;
     const protectedHandler = gate(
@@ -120,6 +120,45 @@ describe("approval providers", () => {
     if (!second.ok) {
       expect(second.error.code).toBe("APPROVAL_BINDING_MISMATCH");
     }
+  });
+
+  it("rejects replayed approval nonces", async () => {
+    const store = createMemoryApprovalNonceStore();
+    const binding = {
+      subject: "user:1",
+      toolName: "delete_file",
+      inputHash: "hash",
+      policyVersion: "policy@1",
+      toolVersion: "tool@1",
+      expiresAt: new Date(Date.now() + 60_000).toISOString(),
+      nonce: "nonce-1"
+    };
+
+    const first = await validateApprovalDecision({ approved: true, binding }, binding, store);
+    const second = await validateApprovalDecision({ approved: true, binding }, binding, store);
+
+    expect(first.valid).toBe(true);
+    expect(second).toMatchObject({ valid: false, code: "APPROVAL_NONCE_REPLAYED" });
+  });
+
+  it("creates approval bindings for circular inputs without throwing", async () => {
+    const circular: { path: string; self?: unknown } = { path: "tmp/file.txt" };
+    circular.self = circular;
+    const approval = vi.fn((request) => approve(request));
+    const protectedHandler = gate(
+      {
+        name: "delete_file",
+        requireApproval: true,
+        approvalSubject: "user:1",
+        approval
+      },
+      async () => "deleted"
+    );
+
+    const result = await protectedHandler(circular);
+
+    expect(result.ok).toBe(true);
+    expect(approval.mock.calls[0]?.[0].binding.inputHash).toMatch(/^[a-f0-9]{64}$/);
   });
 
   it("normalizes approval provider failures", async () => {

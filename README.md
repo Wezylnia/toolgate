@@ -72,7 +72,10 @@ If the agent asks for `.env`, the handler is not executed:
   "error": {
     "type": "policy_violation",
     "code": "PATH_DENIED",
-    "message": "Tool 'read_file' is not allowed to access '.env'."
+    "message": "Tool 'read_file' is not allowed to access the requested path.",
+    "details": {
+      "reasonCode": "PATH_DENYLIST_MATCH"
+    }
   }
 }
 ```
@@ -89,6 +92,7 @@ If the agent asks for `.env`, the handler is not executed:
 - canonical path allowlists and denylists with deny-first behavior when `pathRoot` is set
 - network domain allowlists and denylists
 - command allowlists and denylists
+- machine-readable denials that avoid echoing denied paths, URLs, commands, or secret rule names by default
 - keyed rate limiting with in-memory or custom shared stores
 - custom input extractors for paths, URLs, and commands
 - fail-closed sync or async custom policy rules for application-specific checks

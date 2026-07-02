@@ -33,6 +33,7 @@ describe("network policy", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.code).toBe("DOMAIN_DENIED");
+      expect(result.error.details).toEqual({ reasonCode: "DOMAIN_ALLOWLIST_MISS" });
     }
   });
 
@@ -87,6 +88,7 @@ describe("network policy", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.code).toBe("INVALID_URL");
+      expect(result.error.details).toEqual({ reasonCode: "URL_INVALID" });
     }
   });
 });

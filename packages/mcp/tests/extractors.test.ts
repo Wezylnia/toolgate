@@ -47,7 +47,36 @@ describe("custom input extractors", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.code).toBe("PATH_DENIED");
-      expect(result.error.details?.path).toBe("src/secrets/output.ts");
+      expect(result.error.details).toEqual({ reasonCode: "PATH_DENYLIST_MATCH" });
+    }
+  });
+
+  it("can expose built-in policy denial details when explicitly configured", async () => {
+    const protectedHandler = gate(
+      {
+        name: "copy_files",
+        allowedPaths: ["src/**"],
+        deniedPaths: ["src/secrets/**"],
+        exposePolicyDenialDetails: true,
+        extractPaths: (input) => {
+          const record = input as { from: string; to: string };
+          return [record.from, record.to];
+        }
+      },
+      async () => ({ ok: true })
+    );
+
+    const result = await protectedHandler({
+      from: "src/index.ts",
+      to: "src/secrets/output.ts"
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.details).toEqual({
+        path: "src/secrets/output.ts",
+        reasonCode: "PATH_DENYLIST_MATCH"
+      });
     }
   });
 });

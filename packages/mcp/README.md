@@ -26,6 +26,8 @@ ToolGateKit protects tool handlers at the point where they are registered. A pol
 - this tool should emit privacy-conscious lifecycle events to a telemetry adapter
 
 It returns structured results instead of throwing for expected policy failures.
+Denials are machine-readable and do not echo denied paths, URLs, commands, or secret rule names
+unless the policy explicitly opts in to exposing those details.
 
 Policies are validated when `gate()` is created, so invalid timeouts, rate limits, risks, and
 policy lists fail before a handler is exposed.

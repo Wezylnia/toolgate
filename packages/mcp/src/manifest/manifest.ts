@@ -29,6 +29,8 @@ export interface PolicyManifestTool {
   };
   audit: boolean;
   redact: boolean;
+  exposesPolicyDenialDetails?: boolean;
+  exposesRuleDenialDetails?: boolean;
   timeoutMs?: number;
   metadata?: Record<string, unknown>;
 }
@@ -63,6 +65,8 @@ export function createManifest(
       } : undefined,
       audit: Boolean(policy.audit),
       redact: Boolean(policy.redact),
+      exposesPolicyDenialDetails: policy.exposePolicyDenialDetails,
+      exposesRuleDenialDetails: policy.exposeRuleDenialDetails,
       timeoutMs: policy.timeoutMs,
       metadata: policy.metadata
     }))
