@@ -22,7 +22,8 @@ ToolGateKit protects tool handlers at the point where they are registered. A pol
 - this tool can be rate limited in memory
 - this tool must time out after a fixed duration
 - this tool output and audit logs should redact secrets
-- this tool call should be written to a JSONL audit log
+- this tool call should be written to a JSONL audit log, optionally with hash-chain verification
+- shared policy profiles should be applied consistently across many tools
 - this tool should emit privacy-conscious lifecycle events to a telemetry adapter
 
 It returns structured results instead of throwing for expected policy failures.
@@ -32,7 +33,8 @@ unless the policy explicitly opts in to exposing those details.
 Policies are validated when `gate()` is created, so invalid timeouts, rate limits, risks, and
 policy lists fail before a handler is exposed.
 
-Set `audit: true` to write to `.toolgate/audit.jsonl`, or pass `createAuditLogger({ file })` for a custom path.
+Set `audit: true` to write to `.toolgate/audit.jsonl`, or pass
+`createAuditLogger({ file, hashChain: true })` for a custom tamper-evident path.
 
 ## Quick Start
 
@@ -63,7 +65,7 @@ const deleteFileTool = gate(
 ```
 
 For servers with multiple tools, `createToolGate()` applies shared defaults, rejects duplicate
-tool names, and generates a manifest from registered policies.
+tool names, applies named profiles, and generates a manifest from registered policies.
 
 Because this policy requires approval, the handler is not executed:
 

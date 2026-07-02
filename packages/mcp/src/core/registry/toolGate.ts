@@ -15,12 +15,18 @@ import {
   type McpToolResult
 } from "../../integrations/mcp/adapter.js";
 import { assertPolicy } from "../../policies/validation/validatePolicy.js";
+import {
+  applyPolicyProfile,
+  builtInPolicyProfiles,
+  type PolicyProfile
+} from "../../policies/profiles/profiles.js";
 
 export type ToolPolicyDefaults = Partial<Omit<ToolPolicy, "name">>;
 
 export interface CreateToolGateOptions {
   name?: string;
   defaults?: ToolPolicyDefaults;
+  profiles?: PolicyProfile[];
 }
 
 export interface ToolGateRegistry {
@@ -55,10 +61,14 @@ export class DuplicateToolPolicyError extends TypeError {
 
 export function createToolGate(options: CreateToolGateOptions = {}): ToolGateRegistry {
   const registered = new Map<string, ToolPolicy>();
+  const profiles = new Map(
+    [...builtInPolicyProfiles, ...(options.profiles ?? [])].map((profile) => [profile.name, profile])
+  );
 
   function register(policy: ToolPolicy): ToolPolicy {
     if (registered.has(policy.name)) throw new DuplicateToolPolicyError(policy.name);
-    const resolved = mergePolicy(options.defaults, policy);
+    const profiled = resolveProfile(policy, profiles);
+    const resolved = mergePolicy(options.defaults, profiled);
     assertPolicy(resolved);
     registered.set(resolved.name, resolved);
     return resolved;
@@ -95,6 +105,13 @@ export function createToolGate(options: CreateToolGateOptions = {}): ToolGateReg
       });
     }
   };
+}
+
+function resolveProfile(policy: ToolPolicy, profiles: Map<string, PolicyProfile>): ToolPolicy {
+  if (!policy.profile) return clonePolicy(policy);
+  const profile = profiles.get(policy.profile);
+  if (!profile) throw new TypeError(`Unknown policy profile '${policy.profile}' for tool '${policy.name}'.`);
+  return applyPolicyProfile(profile, policy);
 }
 
 function mergePolicy(defaults: ToolPolicyDefaults | undefined, policy: ToolPolicy): ToolPolicy {

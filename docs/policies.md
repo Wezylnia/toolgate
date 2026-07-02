@@ -159,6 +159,42 @@ backend. Store and key-extractor failures fail closed as `RATE_LIMIT_ERROR`.
 The built-in store is process-local and retains one entry per key until cleared. Use an external
 bounded store for multi-process deployments or untrusted high-cardinality keys.
 
+## Policy Profiles
+
+Use profiles to share conservative defaults across many tools without copying every policy field:
+
+```ts
+import { createToolGate, definePolicyProfile } from "toolgate-mcp";
+
+const workspaceWrite = definePolicyProfile("workspaceWrite", {
+  risk: "write",
+  audit: true,
+  redact: true,
+  deniedPaths: ["**/.env*", "**/.git/**"],
+  timeoutMs: 15_000
+});
+
+const tools = createToolGate({ profiles: [workspaceWrite] });
+
+tools.protect(
+  {
+    name: "write_file",
+    profile: "workspaceWrite",
+    deniedPaths: ["**/secrets/**"]
+  },
+  handler
+);
+```
+
+Built-in profiles are `readOnlyWorkspace`, `writeWorkspace`, `externalApi`, and
+`destructiveWithApproval`. Profile deny lists are additive with tool deny lists. A tool cannot
+silently disable profile protections such as approval, audit, redaction, stricter risk, timeout,
+or rate limit unless that profile explicitly allows the override.
+
+Generated manifests include the applied `profile` and a safe `profileDefaults` snapshot so policy
+review can see what was expanded. Manifest comparison reports removed profiles and weakened
+profile defaults.
+
 ## Custom Rules
 
 Use custom rules for application-specific checks that cannot be expressed as paths, domains, or

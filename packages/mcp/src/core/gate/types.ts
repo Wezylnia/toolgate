@@ -87,6 +87,7 @@ export type ToolGateObserver = (event: ToolGateEvent) => void | Promise<void>;
 export interface ToolPolicy {
   name: string;
   description?: string;
+  profile?: string;
   risk?: ToolRisk;
   policyVersion?: string;
   toolVersion?: string;

@@ -1,6 +1,12 @@
 export { gate } from "./core/gate/gate.js";
 export { createAuditLogger } from "./operations/audit/jsonlAuditLogger.js";
 export { readAuditLog, summarizeAudit } from "./operations/audit/readAuditLog.js";
+export {
+  chainAuditEntry,
+  hashAuditEntry,
+  verifyAuditEntries,
+  verifyAuditLog
+} from "./operations/audit/auditIntegrity.js";
 export { createManifest } from "./operations/manifest/manifest.js";
 export { migrateManifest, InvalidPolicyManifestError } from "./operations/manifest/migrate.js";
 export { compareManifests } from "./operations/manifest/compare.js";
@@ -17,6 +23,16 @@ export {
   externalApiPolicy,
   readOnlyFilesystemPolicy
 } from "./policies/presets/presets.js";
+export {
+  applyPolicyProfile,
+  builtInPolicyProfiles,
+  definePolicyProfile,
+  destructiveWithApprovalProfile,
+  externalApiProfile,
+  readOnlyWorkspaceProfile,
+  writeWorkspaceProfile,
+  PolicyProfileError
+} from "./policies/profiles/profiles.js";
 export { redact } from "./core/redaction/redact.js";
 export { evaluatePolicy } from "./policies/enforcement/evaluatePolicy.js";
 export { evaluateCustomRules, PolicyRuleExecutionError } from "./policies/enforcement/customPolicy.js";
@@ -75,6 +91,10 @@ export type {
 } from "./core/gate/types.js";
 export type { AuditEntry, AuditLogger, CreateAuditLoggerOptions } from "./operations/audit/auditLogger.js";
 export type {
+  AuditVerificationIssue,
+  AuditVerificationResult
+} from "./operations/audit/auditIntegrity.js";
+export type {
   AuditQuery,
   AuditReadIssue,
   AuditReadResult,
@@ -95,6 +115,11 @@ export type {
   ToolGateRegistry,
   ToolPolicyDefaults
 } from "./core/registry/toolGate.js";
+export type {
+  PolicyProfile,
+  PolicyProfileDefaults,
+  ProfileOverrideField
+} from "./policies/profiles/profiles.js";
 export type {
   PolicyValidationIssue,
   PolicyValidationResult

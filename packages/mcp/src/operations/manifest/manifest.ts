@@ -9,6 +9,8 @@ export interface PolicyManifest {
 export interface PolicyManifestTool {
   name: string;
   description?: string;
+  profile?: string;
+  profileDefaults?: Record<string, unknown>;
   risk: string;
   policyVersion?: string;
   toolVersion?: string;
@@ -45,6 +47,8 @@ export function createManifest(
     tools: policies.map((policy) => ({
       name: policy.name,
       description: policy.description,
+      profile: policy.profile,
+      profileDefaults: getProfileDefaults(policy.metadata),
       risk: policy.risk ?? "read",
       policyVersion: policy.policyVersion,
       toolVersion: policy.toolVersion,
@@ -71,4 +75,12 @@ export function createManifest(
       metadata: policy.metadata
     }))
   };
+}
+
+function getProfileDefaults(metadata: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+  const profile = metadata?.toolgateProfile;
+  if (!profile || typeof profile !== "object" || Array.isArray(profile)) return undefined;
+  const defaults = (profile as { defaults?: unknown }).defaults;
+  if (!defaults || typeof defaults !== "object" || Array.isArray(defaults)) return undefined;
+  return defaults as Record<string, unknown>;
 }

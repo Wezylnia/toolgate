@@ -41,11 +41,12 @@ export async function readAuditLog(file: string, query: AuditQuery = {}): Promis
 
   for await (const line of lines) {
     lineNumber += 1;
-    if (line.trim().length === 0) {
+    const normalizedLine = lineNumber === 1 ? line.replace(/^\uFEFF/, "") : line;
+    if (normalizedLine.trim().length === 0) {
       continue;
     }
     try {
-      const value: unknown = JSON.parse(line);
+      const value: unknown = JSON.parse(normalizedLine);
       const issue = validateAuditEntry(value);
       if (issue) {
         issues.push({ line: lineNumber, message: issue });

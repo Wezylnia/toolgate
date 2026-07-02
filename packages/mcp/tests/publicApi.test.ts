@@ -6,9 +6,12 @@ describe("v1 public API", () => {
     const expected = [
       "gate", "createToolGate", "gateMcp", "gateMcpHandler", "toMcpToolResult",
       "createAuditLogger", "readAuditLog", "summarizeAudit",
+      "chainAuditEntry", "hashAuditEntry", "verifyAuditEntries", "verifyAuditLog",
       "createManifest", "migrateManifest", "compareManifests",
       "policyManifestSchema", "validateManifest",
       "policyConfigSchema", "validatePolicyConfig", "migratePolicyConfig",
+      "definePolicyProfile", "applyPolicyProfile", "builtInPolicyProfiles",
+      "readOnlyWorkspaceProfile", "writeWorkspaceProfile", "externalApiProfile", "destructiveWithApprovalProfile",
       "validatePolicy", "validatePolicies", "assertPolicy",
       "createMemoryRateLimitStore", "createRateLimiter", "createRateLimitKey",
       "approve", "denyApproval", "createApprovalBinding", "createMemoryApprovalNonceStore",

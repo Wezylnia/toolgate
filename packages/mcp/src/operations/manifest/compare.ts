@@ -74,6 +74,7 @@ function compareTool(
   compareBooleanProtection(base, head, "redact", "REDACTION", changes);
   compareBooleanExposure(base, head, "exposesPolicyDenialDetails", "POLICY_DENIAL_DETAILS", changes);
   compareBooleanExposure(base, head, "exposesRuleDenialDetails", "RULE_DENIAL_DETAILS", changes);
+  compareProfile(base, head, changes);
   compareTimeout(base, head, changes);
   compareRateLimit(base, head, changes);
   compareStringField(base, head, "pathRoot", "PATH_ROOT", true, changes);
@@ -86,6 +87,53 @@ function compareTool(
   compareLists(base, head, "deniedDomains", "DENY_DOMAINS", false, changes);
   compareLists(base, head, "deniedCommands", "DENY_COMMANDS", false, changes);
   compareLists(base, head, "customRules", "CUSTOM_RULES", false, changes);
+}
+
+function compareProfile(
+  base: PolicyManifestTool,
+  head: PolicyManifestTool,
+  changes: ManifestChange[]
+): void {
+  if (base.profile !== head.profile) {
+    if (base.profile && !head.profile) {
+      changes.push(fieldChange("danger", "PROFILE_REMOVED", head.name, "profile", `Tool '${head.name}' profile was removed.`, base.profile));
+    } else if (!base.profile && head.profile) {
+      changes.push(fieldChange("info", "PROFILE_ADDED", head.name, "profile", `Tool '${head.name}' profile was added.`, undefined, head.profile));
+    } else {
+      changes.push(fieldChange("warning", "PROFILE_CHANGED", head.name, "profile", `Tool '${head.name}' profile changed.`, base.profile, head.profile));
+    }
+  }
+
+  if (JSON.stringify(base.profileDefaults ?? {}) !== JSON.stringify(head.profileDefaults ?? {})) {
+    const weakened = profileDefaultsWeakened(base.profileDefaults, head.profileDefaults);
+    changes.push(fieldChange(
+      weakened ? "danger" : "warning",
+      "PROFILE_DEFAULTS_CHANGED",
+      head.name,
+      "profileDefaults",
+      `Tool '${head.name}' profile defaults changed.`,
+      base.profileDefaults,
+      head.profileDefaults
+    ));
+  }
+}
+
+function profileDefaultsWeakened(
+  base: Record<string, unknown> | undefined,
+  head: Record<string, unknown> | undefined
+): boolean {
+  if (!base) return false;
+  if (!head) return true;
+  for (const field of ["requireApproval", "audit", "redact"] as const) {
+    if (base[field] === true && head[field] !== true) return true;
+  }
+  if (typeof base.timeoutMs === "number" && typeof head.timeoutMs === "number" && head.timeoutMs > base.timeoutMs) {
+    return true;
+  }
+  if (typeof base.risk === "string" && typeof head.risk === "string") {
+    return (riskRank[head.risk] ?? 0) < (riskRank[base.risk] ?? 0);
+  }
+  return false;
 }
 
 function compareBooleanExposure(

@@ -70,6 +70,22 @@ Filters include `--tool`, `--decision`, `--reason`, `--since`, `--until`, and `-
 `--json` for machine-readable summary and parse issues. The command exits with code `1` if any
 malformed audit lines are found.
 
+Verify hash-chained audit logs:
+
+```bash
+toolgate audit verify --file .toolgate/audit.jsonl --json
+```
+
+Export filtered audit entries without changing redacted content:
+
+```bash
+toolgate audit export --file .toolgate/audit.jsonl --format ndjson --out audit.ndjson
+toolgate audit export --file .toolgate/audit.jsonl --format json
+```
+
+Hash-chain verification is tamper-evident, not tamper-proof. Store logs somewhere append-only if
+the host needs stronger guarantees.
+
 ## Check Manifest Changes
 
 ```bash

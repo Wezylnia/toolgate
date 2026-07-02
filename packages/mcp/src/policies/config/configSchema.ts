@@ -11,6 +11,7 @@ export interface PolicyConfig {
 export interface PolicyConfigTool {
   name: string;
   description?: string;
+  profile?: string;
   policyVersion?: string;
   toolVersion?: string;
   risk?: ToolRisk;
@@ -53,6 +54,7 @@ export const policyConfigSchema = {
         properties: {
           name: { type: "string", minLength: 1 },
           description: { type: "string" },
+          profile: { type: "string", minLength: 1 },
           policyVersion: { type: "string", minLength: 1 },
           toolVersion: { type: "string", minLength: 1 },
           risk: { enum: ["read", "write", "external", "destructive"] },
@@ -89,7 +91,7 @@ export const policyConfigSchema = {
 } as const;
 
 const toolKeys = new Set([
-  "name", "description", "policyVersion", "toolVersion", "risk", "requireApproval", "allowedPaths", "deniedPaths", "pathRoot",
+  "name", "description", "profile", "policyVersion", "toolVersion", "risk", "requireApproval", "allowedPaths", "deniedPaths", "pathRoot",
   "allowedDomains", "deniedDomains", "allowedCommands", "deniedCommands", "customRules",
   "rateLimit", "timeoutMs", "redact", "audit", "exposePolicyDenialDetails", "exposeRuleDenialDetails", "metadata"
 ]);
@@ -129,6 +131,7 @@ export function createManifestFromConfig(config: PolicyConfig): PolicyManifest {
     tools: config.tools.map((tool): PolicyManifestTool => ({
       name: tool.name,
       description: tool.description,
+      profile: tool.profile,
       policyVersion: tool.policyVersion,
       toolVersion: tool.toolVersion,
       risk: tool.risk ?? "read",
@@ -176,7 +179,7 @@ function validateConfigTool(
   if (value.risk !== undefined && !["read", "write", "external", "destructive"].includes(String(value.risk))) {
     issues.push({ path: `${path}.risk`, message: "Risk is invalid." });
   }
-  for (const key of ["policyVersion", "toolVersion", "pathRoot"] as const) {
+  for (const key of ["profile", "policyVersion", "toolVersion", "pathRoot"] as const) {
     if (value[key] !== undefined && (typeof value[key] !== "string" || value[key].length === 0)) {
       issues.push({ path: `${path}.${key}`, message: `${key} must be a non-empty string.` });
     }

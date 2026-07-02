@@ -97,10 +97,11 @@ If the agent asks for `.env`, the handler is not executed:
 - custom input extractors for paths, URLs, and commands
 - fail-closed sync or async custom policy rules for application-specific checks
 - policy presets for common filesystem and external API tools
+- named policy profiles for reusable, inspectable policy composition
 - timeout handling with `AbortSignal`
 - default redaction for common secrets and tokens
 - append-only JSONL audit logs, with `audit: true` writing to `.toolgate/audit.jsonl`
-- streaming audit-log filtering and summaries through API or CLI
+- optional hash-chained audit logs, verification, export, filtering, and summaries through API or CLI
 - lifecycle observer events for OpenTelemetry or custom metrics adapters
 - dependency-free OpenTelemetry span bridge
 - policy manifest export for visibility
@@ -145,6 +146,12 @@ Inspect blocked calls in an audit log:
 
 ```bash
 toolgate audit --file .toolgate/audit.jsonl --decision blocked --limit 100
+```
+
+Verify a hash-chained audit log:
+
+```bash
+toolgate audit verify --file .toolgate/audit.jsonl
 ```
 
 Fail CI when a policy manifest removes protection:

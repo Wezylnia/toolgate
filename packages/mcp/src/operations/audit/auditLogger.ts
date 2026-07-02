@@ -8,6 +8,8 @@ export interface AuditEntry {
   risk: ToolRisk;
   decision: AuditDecision;
   requestId: string;
+  previousHash?: string | null;
+  entryHash?: string;
   durationMs?: number;
   reason?: string;
   input?: unknown;
@@ -23,4 +25,5 @@ export interface AuditLogger {
 export interface CreateAuditLoggerOptions {
   file: string;
   failOnError?: boolean;
+  hashChain?: boolean;
 }

@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.3.0 - 2026-07-02
+
+### Added
+
+- Optional hash-chained JSONL audit logs with `hashChain: true`.
+- Audit verification helpers: `hashAuditEntry()`, `chainAuditEntry()`, `verifyAuditEntries()`, and `verifyAuditLog()`.
+- `toolgate audit verify` and `toolgate audit export` CLI commands.
+- Named policy profiles with `definePolicyProfile()` and registry-level profile support.
+- Built-in profiles: `readOnlyWorkspace`, `writeWorkspace`, `externalApi`, and `destructiveWithApproval`.
+- Profile-aware manifests with inspectable `profile` and safe `profileDefaults` snapshots.
+- Manifest comparison checks for profile removal and weakened profile defaults.
+
+### Changed
+
+- GitHub Action default `toolgate-mcp` CLI version is now `1.3.0`.
+- Audit docs now clarify hash-chain verification is tamper-evident, not tamper-proof.
+
 ## 1.1.1 - 2026-07-02
 
 ### Added

@@ -28,6 +28,8 @@ export const policyManifestSchema = {
         properties: {
           name: { type: "string", minLength: 1 },
           description: { type: "string" },
+          profile: { type: "string", minLength: 1 },
+          profileDefaults: { type: "object" },
           policyVersion: { type: "string", minLength: 1 },
           toolVersion: { type: "string", minLength: 1 },
           risk: {
@@ -123,7 +125,7 @@ function validateManifestTool(
   }
 
   const knownKeys = new Set([
-    "name", "description", "policyVersion", "toolVersion", "risk", "requiresApproval", "allowedPaths", "deniedPaths", "pathRoot",
+    "name", "description", "profile", "profileDefaults", "policyVersion", "toolVersion", "risk", "requiresApproval", "allowedPaths", "deniedPaths", "pathRoot",
     "allowedDomains", "deniedDomains", "allowedCommands", "deniedCommands", "customRules",
     "rateLimit", "audit", "redact", "exposesPolicyDenialDetails", "exposesRuleDenialDetails", "timeoutMs", "metadata"
   ]);
@@ -136,6 +138,10 @@ function validateManifestTool(
   }
   if (tool.description !== undefined && typeof tool.description !== "string") {
     issues.push({ path: `${path}.description`, message: "Description must be a string." });
+  }
+  validateOptionalString(tool, "profile", path, issues);
+  if (tool.profileDefaults !== undefined && !isRecord(tool.profileDefaults)) {
+    issues.push({ path: `${path}.profileDefaults`, message: "profileDefaults must be an object." });
   }
   validateOptionalString(tool, "policyVersion", path, issues);
   validateOptionalString(tool, "toolVersion", path, issues);

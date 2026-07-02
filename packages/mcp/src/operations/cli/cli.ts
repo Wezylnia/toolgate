@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { readAuditLog, summarizeAudit } from "../audit/readAuditLog.js";
+import { verifyAuditLog } from "../audit/auditIntegrity.js";
 import type { AuditDecision } from "../audit/auditLogger.js";
 import type { PolicyManifest } from "../manifest/manifest.js";
 import { compareManifests } from "../manifest/compare.js";
@@ -238,6 +239,10 @@ async function runLintManifestCommand(args: string[], io: CliIo): Promise<number
 }
 
 async function runAuditCommand(args: string[], io: CliIo): Promise<number> {
+  const [subcommand, ...rest] = args;
+  if (subcommand === "verify") return runAuditVerifyCommand(rest, io);
+  if (subcommand === "export") return runAuditExportCommand(rest, io);
+
   const options = parseOptions(args);
   const file = options.file ?? options.f;
   if (!file) {
@@ -264,6 +269,57 @@ async function runAuditCommand(args: string[], io: CliIo): Promise<number> {
         io.stderr.write(`line ${issue.line}: ${issue.message}\n`);
       }
     }
+    return result.issues.length === 0 ? 0 : 1;
+  } catch (error) {
+    io.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    return 1;
+  }
+}
+
+async function runAuditVerifyCommand(args: string[], io: CliIo): Promise<number> {
+  const options = parseOptions(args);
+  const file = options.file ?? options.f;
+  if (!file) {
+    io.stderr.write("Missing required --file option.\n");
+    return 1;
+  }
+  try {
+    const result = await verifyAuditLog(file);
+    if (options.json === "true") {
+      io.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    } else {
+      io.stdout.write(`Audit verification ${result.valid ? "passed" : "failed"} for ${result.entries} entries.\n`);
+      for (const issue of result.issues) {
+        io.stderr.write(`line ${issue.line}: ${issue.code} ${issue.message}\n`);
+      }
+    }
+    return result.valid ? 0 : 1;
+  } catch (error) {
+    io.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    return 1;
+  }
+}
+
+async function runAuditExportCommand(args: string[], io: CliIo): Promise<number> {
+  const options = parseOptions(args);
+  const file = options.file ?? options.f;
+  const format = options.format ?? "json";
+  if (!file) {
+    io.stderr.write("Missing required --file option.\n");
+    return 1;
+  }
+  if (format !== "json" && format !== "ndjson") {
+    io.stderr.write("--format must be json or ndjson.\n");
+    return 1;
+  }
+  try {
+    const result = await readAuditLog(file);
+    const serialized = format === "ndjson"
+      ? `${result.entries.map((entry) => JSON.stringify(entry)).join("\n")}\n`
+      : `${JSON.stringify({ entries: result.entries, issues: result.issues }, null, 2)}\n`;
+    const out = options.out ?? options.o;
+    if (out) await writeFile(out, serialized, "utf8");
+    else io.stdout.write(serialized);
     return result.issues.length === 0 ? 0 : 1;
   } catch (error) {
     io.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
@@ -371,6 +427,8 @@ Usage:
   toolgate validate-config --file toolgate.config.json
   toolgate validate-manifest --file policy-manifest.json
   toolgate audit --file .toolgate/audit.jsonl [--tool name] [--decision blocked] [--json]
+  toolgate audit verify --file .toolgate/audit.jsonl [--json]
+  toolgate audit export --file .toolgate/audit.jsonl [--format json|ndjson] [--out audit.json]
   toolgate check-manifest --base before.json --head after.json [--fail-on danger] [--json]
   toolgate lint-policy --config toolgate.config.json [--fail-on danger] [--json]
   toolgate lint-manifest --file policy-manifest.json [--fail-on danger] [--json]
@@ -382,7 +440,7 @@ Commands:
   manifest           Create a policy manifest from a JSON config.
   validate-config    Validate a JSON policy config.
   validate-manifest  Validate a policy manifest.
-  audit              Filter and summarize a JSONL audit log.
+  audit              Filter, verify, or export a JSONL audit log.
   check-manifest     Detect security-relevant policy manifest changes.
   lint-policy        Report security advisories for a static policy config.
   lint-manifest      Report security advisories for a policy manifest.
